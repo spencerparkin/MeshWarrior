@@ -155,12 +155,24 @@
     <ClInclude Include="Source\Mesh.h" />
     <ClInclude Include="Source\MeshFormat.h" />
     <ClInclude Include="Source\MeshFormats\OBJFormat.h" />
+    <ClInclude Include="Source\MeshOperation.h" />
+    <ClInclude Include="Source\MeshOperations\MeshDifferenceOperation.h" />
+    <ClInclude Include="Source\MeshOperations\MeshIntersectionOperation.h" />
+    <ClInclude Include="Source\MeshOperations\MeshUnionOperation.h" />
+    <ClInclude Include="Source\MeshSetOperation.h" />
+    <ClInclude Include="Source\MeshTopology.h" />
     <ClInclude Include="Source\Vector.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Mesh.cpp" />
     <ClCompile Include="Source\MeshFormat.cpp" />
     <ClCompile Include="Source\MeshFormats\OBJFormat.cpp" />
+    <ClCompile Include="Source\MeshOperation.cpp" />
+    <ClCompile Include="Source\MeshOperations\MeshDifferenceOperation.cpp" />
+    <ClCompile Include="Source\MeshOperations\MeshIntersectionOperation.cpp" />
+    <ClCompile Include="Source\MeshOperations\MeshUnionOperation.cpp" />
+    <ClCompile Include="Source\MeshSetOperation.cpp" />
+    <ClCompile Include="Source\MeshTopology.cpp" />
     <ClCompile Include="Source\Vector.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

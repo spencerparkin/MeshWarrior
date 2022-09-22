@@ -121,7 +121,7 @@ int Mesh::FindOrCreateVertex(const Vertex& vertex, Index* index /*= nullptr*/, d
 	for(int i = 0; i < (signed)this->vertexArray->size(); i++)
 	{
 		const Vertex& existingVertex = (*this->vertexArray)[i];
-		if ((existingVertex.point - vertex.point).Length() < eps)
+		if ((existingVertex.point - vertex.point).Length() <= eps)
 			return i;
 	}
 

@@ -8,6 +8,9 @@
     <Filter Include="Source\MeshFormats">
       <UniqueIdentifier>{10059749-20ea-4194-b791-f82e26d252cb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\MeshOperations">
+      <UniqueIdentifier>{ea8c2d11-6473-4263-a436-b899427f02e2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Mesh.h">
@@ -25,6 +28,24 @@
     <ClInclude Include="Source\MeshFormats\OBJFormat.h">
       <Filter>Source\MeshFormats</Filter>
     </ClInclude>
+    <ClInclude Include="Source\MeshTopology.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\MeshOperation.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\MeshSetOperation.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\MeshOperations\MeshUnionOperation.h">
+      <Filter>Source\MeshOperations</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\MeshOperations\MeshIntersectionOperation.h">
+      <Filter>Source\MeshOperations</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\MeshOperations\MeshDifferenceOperation.h">
+      <Filter>Source\MeshOperations</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Vector.cpp">
@@ -38,6 +59,24 @@
     </ClCompile>
     <ClCompile Include="Source\MeshFormat.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\MeshTopology.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\MeshOperation.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\MeshSetOperation.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\MeshOperations\MeshUnionOperation.cpp">
+      <Filter>Source\MeshOperations</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\MeshOperations\MeshIntersectionOperation.cpp">
+      <Filter>Source\MeshOperations</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\MeshOperations\MeshDifferenceOperation.cpp">
+      <Filter>Source\MeshOperations</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
