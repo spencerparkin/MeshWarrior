@@ -43,6 +43,11 @@ bool Mesh::IsValidVertex(int i) const
 	return i >= 0 && i < (signed)this->vertexArray->size();
 }
 
+int Mesh::GetNumVertices() const
+{
+	return this->vertexArray->size();
+}
+
 Mesh::Face* Mesh::GetFace(int i)
 {
 	if (!this->IsValidFace(i))
@@ -68,6 +73,11 @@ bool Mesh::SetFace(int i, const Face& face)
 bool Mesh::IsValidFace(int i) const
 {
 	return i >= 0 && i < (signed)this->faceArray->size();
+}
+
+int Mesh::GetNumFaces() const
+{
+	return this->faceArray->size();
 }
 
 void Mesh::Clear()

@@ -62,11 +62,13 @@ namespace MeshWarrior
 		const Vertex* GetVertex(int i) const;
 		bool SetVertex(int i, const Vertex& vertex);
 		bool IsValidVertex(int i) const;
+		int GetNumVertices() const;
 
 		Face* GetFace(int i);
 		const Face* GetFace(int i) const;
 		bool SetFace(int i, const Face& face);
 		bool IsValidFace(int i) const;
+		int GetNumFaces() const;
 
 		void Clear();
 		int AddVertex(const Vertex& vertex);
