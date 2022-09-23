@@ -55,11 +55,14 @@
     <ClInclude Include="Source\ConvexPolygon.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Plane.h">
+    <ClInclude Include="Source\Shape.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="Source\MeshGraph.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\MeshOperations\MeshMergeOperation.h">
+      <Filter>Source\MeshOperations</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -99,11 +102,14 @@
     <ClCompile Include="Source\BoundingBoxTree.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Plane.cpp">
+    <ClCompile Include="Source\Shape.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Source\ConvexPolygon.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\MeshOperations\MeshMergeOperation.cpp">
+      <Filter>Source\MeshOperations</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

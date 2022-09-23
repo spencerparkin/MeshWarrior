@@ -9,22 +9,8 @@ namespace MeshWarrior
 	{
 	public:
 		
-		class Face;
-
-		class Edge
-		{
-		public:
-			Face* face[2];
-		};
-
-		class Face
-		{
-		public:
-			std::vector<Edge*> edgeList;
-			void* userData;
-		};
-
-		std::vector<Edge*> edgeList;
-		std::vector<Face*> faceList;
+		// I'm not sure how to design this yet, but we need to be able to
+		// walk from one face to another along shared edges, even if those
+		// edges aren't perfectly shared.
 	};
 }

@@ -2,6 +2,7 @@
 #include "MeshOperations/MeshUnionOperation.h"
 #include "MeshOperations/MeshIntersectionOperation.h"
 #include "MeshOperations/MeshDifferenceOperation.h"
+#include "MeshOperations/MeshMergeOperation.h"
 #include "Mesh.h"
 
 int main()
@@ -14,7 +15,7 @@ int main()
 	Mesh* meshB = objFormat.Load("Sphere.OBJ");
 
 	Mesh* meshResult = nullptr;
-	MeshOperation* meshOp = new MeshUnionOperation();
+	MeshOperation* meshOp = new MeshMergeOperation();
 
 	if (meshA && meshB)
 		meshResult = meshOp->Calculate(meshA, meshB);
