@@ -52,6 +52,12 @@
     <ClInclude Include="Source\BoundingBoxTree.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="Source\ConvexPolygon.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Plane.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Vector.cpp">
@@ -88,6 +94,12 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Source\BoundingBoxTree.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Plane.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ConvexPolygon.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

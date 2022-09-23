@@ -91,14 +91,14 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 
 		if (newFaceSetA.size() > 0 || newFaceSetB.size() > 0)
 		{
-			this->faceSet.erase(pair.faceA);
-			this->faceSet.erase(pair.faceB);
+			this->faceSet->erase(pair.faceA);
+			this->faceSet->erase(pair.faceB);
 
 			for (Face* face : newFaceSetA)
-				this->faceSet.insert(face);
+				this->faceSet->insert(face);
 
 			for (Face* face : newFaceSetB)
-				this->faceSet.insert(face);
+				this->faceSet->insert(face);
 
 			std::set<Face*> oldFaceSetA, oldFaceSetB;
 
