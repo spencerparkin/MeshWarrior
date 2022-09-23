@@ -139,6 +139,14 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 	}
 
 	// TODO: Just dump out all the polygons at this point so we can debug the result.
+
+	// TODO: Now create a mesh graph for the A faces and a mesh graph for the B faces.
+	//       Label each node of each graph as "inside" or "outside" while performing
+	//       a BFS of each graph.  Knowing when we transition from outside to inside,
+	//       or vice-versa, will require data gathered from the cutting process.  Also,
+	//       knowing the initial label of the initial node will require some work.
+	//       Note that there are two graphs here, not one.  This greatly simplifies
+	//       the original thinking on the matter.
 }
 
 void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<Face*>& newFaceSetA, std::set<Face*>& newFaceSetB)

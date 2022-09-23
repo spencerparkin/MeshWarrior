@@ -158,6 +158,7 @@
     <ClInclude Include="Source\Mesh.h" />
     <ClInclude Include="Source\MeshFormat.h" />
     <ClInclude Include="Source\MeshFormats\OBJFormat.h" />
+    <ClInclude Include="Source\MeshGraph.h" />
     <ClInclude Include="Source\MeshOperation.h" />
     <ClInclude Include="Source\MeshOperations\MeshDifferenceOperation.h" />
     <ClInclude Include="Source\MeshOperations\MeshIntersectionOperation.h" />

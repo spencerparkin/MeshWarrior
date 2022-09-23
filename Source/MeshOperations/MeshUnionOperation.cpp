@@ -14,5 +14,8 @@ MeshUnionOperation::MeshUnionOperation()
 {
 	this->ProcessMeshes(meshA, meshB);
 
+	// Take all outside A polygons with all outside B polygons.
+	// No need to reverse any polygons.
+
 	return nullptr;
 }
