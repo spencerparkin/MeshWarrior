@@ -13,37 +13,22 @@ int main()
 	Mesh* meshA = objFormat.Load("Box.OBJ");
 	Mesh* meshB = objFormat.Load("Sphere.OBJ");
 
-	Mesh* meshUnion = nullptr;
-	Mesh* meshIntersection = nullptr;
-	Mesh* meshDifference = nullptr;
+	Mesh* meshResult = nullptr;
+	MeshOperation* meshOp = new MeshUnionOperation();
 
 	if (meshA && meshB)
-	{
-		MeshUnionOperation unionOp;
-		meshUnion = unionOp.Calculate(meshA, meshB);
-
-		MeshIntersectionOperation intersectOp;
-		meshIntersection = intersectOp.Calculate(meshA, meshB);
-
-		MeshDifferenceOperation diffOp;
-		meshDifference = diffOp.Calculate(meshA, meshB);
-	}
+		meshResult = meshOp->Calculate(meshA, meshB);
 
 	delete meshA;
 	delete meshB;
 
-	if (meshUnion)
-		objFormat.Save("Box_Union_Sphere.OBJ", *meshUnion);
+	if (meshResult)
+	{
+		objFormat.Save("Result.OBJ", *meshResult);
+		delete meshResult;
+	}
 
-	if (meshIntersection)
-		objFormat.Save("Box_Intersect_Sphere.OBJ", *meshIntersection);
-
-	if (meshDifference)
-		objFormat.Save("Box_Diff_Sphere.OBJ", *meshDifference);
-
-	delete meshUnion;
-	delete meshIntersection;
-	delete meshDifference;
+	delete meshOp;
 
 	return 0;
 }

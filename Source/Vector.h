@@ -21,14 +21,18 @@ namespace MeshWarrior
 		Vector& Add(const Vector& vectorA, const Vector& vectorB);
 		Vector& Subtract(const Vector& vectorA, const Vector& vectorB);
 		Vector& Multiply(const Vector& vector, double scalar);
+		Vector& Divide(const Vector& vector, double scalar);
 		Vector& Project(const Vector& vectorA, const Vector& vectorB);
 		Vector& Reject(const Vector& vectorA, const Vector& vectorB);
 		Vector& Rotate(const Vector& vector, const Vector& unitLengthAxis, float angleRadians);
+		Vector& Min(const Vector& vectorA, const Vector& vectorB);
+		Vector& Max(const Vector& vectorA, const Vector& vectorB);
 
 		void operator=(const Vector& vector);
 		void operator+=(const Vector& vector);
 		void operator-=(const Vector& vector);
 		void operator*=(double scalar);
+		void operator/=(double scalar);
 
 		double x, y, z;
 	};
@@ -58,6 +62,13 @@ namespace MeshWarrior
 	{
 		Vector scalarProduct;
 		scalarProduct.Multiply(vector, scalar);
+		return scalarProduct;
+	}
+
+	inline Vector operator/(const Vector& vector, double scalar)
+	{
+		Vector scalarProduct;
+		scalarProduct.Divide(vector, scalar);
 		return scalarProduct;
 	}
 }

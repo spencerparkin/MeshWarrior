@@ -46,6 +46,12 @@
     <ClInclude Include="Source\MeshOperations\MeshDifferenceOperation.h">
       <Filter>Source\MeshOperations</Filter>
     </ClInclude>
+    <ClInclude Include="Source\AxisAlignedBox.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\BoundingBoxTree.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Vector.cpp">
@@ -77,6 +83,12 @@
     </ClCompile>
     <ClCompile Include="Source\MeshOperations\MeshDifferenceOperation.cpp">
       <Filter>Source\MeshOperations</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\AxisAlignedBox.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\BoundingBoxTree.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

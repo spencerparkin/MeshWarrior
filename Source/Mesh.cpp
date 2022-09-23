@@ -138,6 +138,8 @@ void Mesh::ToPolygonArray(std::vector<ConvexPolygon>& polygonArray) const
 		ConvexPolygon polygon;
 		for (int i : face.vertexArray)
 			polygon.vertexArray.push_back((*this->vertexArray)[i]);
+
+		polygonArray.push_back(polygon);
 	}
 }
 

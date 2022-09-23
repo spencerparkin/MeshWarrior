@@ -109,6 +109,14 @@ Vector& Vector::Multiply(const Vector& vector, double scalar)
 	return *this;
 }
 
+Vector& Vector::Divide(const Vector& vector, double scalar)
+{
+	this->x = vector.x / scalar;
+	this->y = vector.y / scalar;
+	this->z = vector.z / scalar;
+	return *this;
+}
+
 Vector& Vector::Project(const Vector& vectorA, const Vector& vectorB)
 {
 	this->Multiply(vectorB, Dot(*this, vectorA));
@@ -143,6 +151,22 @@ Vector& Vector::Rotate(const Vector& vector, const Vector& unitLengthAxis, float
 	return *this;
 }
 
+Vector& Vector::Min(const Vector& vectorA, const Vector& vectorB)
+{
+	this->x = MW_MIN(vectorA.x, vectorB.x);
+	this->y = MW_MIN(vectorA.y, vectorB.y);
+	this->z = MW_MIN(vectorA.z, vectorB.z);
+	return *this;
+}
+
+Vector& Vector::Max(const Vector& vectorA, const Vector& vectorB)
+{
+	this->x = MW_MAX(vectorA.x, vectorB.x);
+	this->y = MW_MAX(vectorA.y, vectorB.y);
+	this->z = MW_MAX(vectorA.z, vectorB.z);
+	return *this;
+}
+
 void Vector::operator=(const Vector& vector)
 {
 	this->x = vector.x;
@@ -169,4 +193,11 @@ void Vector::operator*=(double scalar)
 	this->x *= scalar;
 	this->y *= scalar;
 	this->z *= scalar;
+}
+
+void Vector::operator/=(double scalar)
+{
+	this->x /= scalar;
+	this->y /= scalar;
+	this->z /= scalar;
 }
