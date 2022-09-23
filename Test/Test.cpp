@@ -15,7 +15,7 @@ int main()
 	Mesh* meshB = objFormat.Load("Sphere.OBJ");
 
 	Mesh* meshResult = nullptr;
-	MeshOperation* meshOp = new MeshMergeOperation();
+	MeshOperation* meshOp = new MeshUnionOperation();
 
 	if (meshA && meshB)
 		meshResult = meshOp->Calculate(meshA, meshB);

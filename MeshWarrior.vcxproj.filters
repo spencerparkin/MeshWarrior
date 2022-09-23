@@ -52,7 +52,7 @@
     <ClInclude Include="Source\BoundingBoxTree.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Source\ConvexPolygon.h">
+    <ClInclude Include="Source\Polygon.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="Source\Shape.h">
@@ -105,7 +105,7 @@
     <ClCompile Include="Source\Shape.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Source\ConvexPolygon.cpp">
+    <ClCompile Include="Source\Polygon.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Source\MeshOperations\MeshMergeOperation.cpp">

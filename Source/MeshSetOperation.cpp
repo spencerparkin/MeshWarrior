@@ -1,5 +1,6 @@
 #include "MeshSetOperation.h"
 #include "Mesh.h"
+#include "MeshFormats/OBJFormat.h"
 #include <set>
 
 using namespace MeshWarrior;
@@ -138,7 +139,33 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 		}
 	}
 
-	// TODO: Just dump out all the polygons at this point so we can debug the result.
+	//
+	// Bucket sort the chopped-up polygons into their respective meshes.
+	//
+
+	polygonArrayA.clear();
+	polygonArrayB.clear();
+
+	for (Face* face : *this->faceSet)
+	{
+		if (face->family == Face::FAMILY_A)
+			polygonArrayA.push_back(face->polygon);
+		else if (face->family == Face::FAMILY_B)
+			polygonArrayB.push_back(face->polygon);
+	}
+
+	Mesh* refinedMeshA = new Mesh();
+	Mesh* refinedMeshB = new Mesh();
+
+	refinedMeshA->FromPolygonArray(polygonArrayA);
+	refinedMeshB->FromPolygonArray(polygonArrayB);
+
+	// For debugging purposes, dump the refined meshes for examination.
+#if true
+	OBJFormat objFormat;
+	objFormat.Save("refined_mesh_A.obj", *refinedMeshA);
+	objFormat.Save("refined_mesh_b.obj", *refinedMeshB);
+#endif
 
 	// TODO: Now create a mesh graph for the A faces and a mesh graph for the B faces.
 	//       Label each node of each graph as "inside" or "outside" while performing
@@ -146,7 +173,11 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 	//       or vice-versa, will require data gathered from the cutting process.  Also,
 	//       knowing the initial label of the initial node will require some work.
 	//       Note that there are two graphs here, not one.  This greatly simplifies
-	//       the original thinking on the matter.
+	//       the original thinking on the matter.  Zero or more line-loops should be
+	//       generated from the cutting process.  If zero, the situation seems non-
+	//       trivial in many cases.  Not a big deal if we require it to be non-zero.
+
+	// TODO: After determining which faces are inside/outside, maybe reverse winding of all inside faces?
 }
 
 void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<Face*>& newFaceSetA, std::set<Face*>& newFaceSetB)
@@ -154,7 +185,43 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 	newFaceSetA.clear();
 	newFaceSetB.clear();
 
-	//...
+	ConvexPolygon polygonA, polygonB;
+	pair.faceA->ToBasicPolygon(polygonA);
+	pair.faceB->ToBasicPolygon(polygonB);
+
+	// Do they actually intersect in a non-trivial way?
+	Shape* shape = polygonA.IntersectWith(&polygonB);
+	if (shape)
+	{
+		delete shape;
+
+		Plane planeA, planeB;
+		polygonA.CalcPlane(planeA);
+		polygonB.CalcPlane(planeB);
+
+		std::vector<ConvexPolygon> polygonArrayA, polygonArrayB;
+		polygonA.SplitAgainstPlane(planeB, polygonArrayA);
+		polygonB.SplitAgainstPlane(planeA, polygonArrayB);
+
+		for (ConvexPolygon& newPolygonA : polygonArrayA)
+		{
+			Face* face = new Face(Face::FAMILY_A);
+			face->FromBasicPolygon(newPolygonA);
+			newFaceSetA.insert(face);
+		}
+
+		for (ConvexPolygon& newPolygonB : polygonArrayB)
+		{
+			Face* face = new Face(Face::FAMILY_B);
+			face->FromBasicPolygon(newPolygonB);
+			newFaceSetB.insert(face);
+		}
+	}
+}
+
+MeshSetOperation::Face::Face(Family family)
+{
+	this->family = family;
 }
 
 MeshSetOperation::Face::Face(Family family, const Mesh::ConvexPolygon& polygon)
@@ -175,4 +242,22 @@ MeshSetOperation::Face::Face(Family family, const Mesh::ConvexPolygon& polygon)
 		box.MinimallyExpandToContainPoint(this->polygon.vertexArray[i].point);
 
 	return box;
+}
+
+void MeshSetOperation::Face::ToBasicPolygon(Polygon& polygon) const
+{
+	polygon.vertexArray->clear();
+	for (const Mesh::Vertex& vertex : this->polygon.vertexArray)
+		polygon.vertexArray->push_back(vertex.point);
+}
+
+void MeshSetOperation::Face::FromBasicPolygon(const Polygon& polygon)
+{
+	this->polygon.vertexArray.clear();
+	for (const Vector& point : *polygon.vertexArray)
+	{
+		Mesh::Vertex vertex;
+		vertex.point = point;
+		this->polygon.vertexArray.push_back(vertex);
+	}
 }

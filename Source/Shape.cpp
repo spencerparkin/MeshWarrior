@@ -18,6 +18,34 @@ Shape::Shape()
 	return distance <= eps;
 }
 
+/*virtual*/ Shape* Shape::IntersectWith(const Shape* shape) const
+{
+	// Some intersections are non-trivial, but when they are
+	// easy to calculate, a derived class can do that with an
+	// override of this method.
+	return nullptr;
+}
+
+//--------------------------------- Point ---------------------------------
+
+Point::Point()
+{
+}
+
+Point::Point(const Vector& center)
+{
+	this->center = center;
+}
+
+/*virtual*/ Point::~Point()
+{
+}
+
+/*virtual*/ double Point::ShortestSignedDistanceToPoint(const Vector& point) const
+{
+	return (point - this->center).Length();
+}
+
 //--------------------------------- Plane ---------------------------------
 
 Plane::Plane()
@@ -34,6 +62,30 @@ Plane::Plane(const Vector& center, const Vector& normal)
 /*virtual*/ double Plane::ShortestSignedDistanceToPoint(const Vector& point) const
 {
 	return Vector::Dot(point - this->center, this->unitNormal);
+}
+
+/*virtual*/ Shape* Plane::IntersectWith(const Shape* shape) const
+{
+	const Line* line = dynamic_cast<const Line*>(shape);
+	if (line)
+	{
+		double numer = Vector::Dot(this->center - line->center, this->unitNormal);
+		double denom = Vector::Dot(this->unitNormal, line->unitNormal);
+		if (denom != 0.0)
+		{
+			double lambda = numer / denom;
+			if (!(lambda != lambda || ::isnan(lambda) || ::isinf(lambda)))
+			{
+				Vector point = line->center + line->unitNormal * lambda;
+
+				// We still have to check here, because we could be a line segment.
+				if (line->ContainsPoint(point))
+					return new Point(point);
+			}
+		}
+	}
+
+	return nullptr;
 }
 
 //--------------------------------- Line ---------------------------------
@@ -100,6 +152,12 @@ LineSegment::LineSegment()
 LineSegment::LineSegment(const Vector& center, const Vector& normal, double radius) : Line(center, normal)
 {
 	this->radius = radius;
+}
+
+LineSegment::LineSegment(const Vector& pointA, const Vector& pointB)
+{
+	this->center = (pointA + pointB) / 2.0;
+	this->radius = (pointA - pointB).Length() / 2.0;
 }
 
 /*virtual*/ LineSegment::~LineSegment()

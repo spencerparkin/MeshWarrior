@@ -14,6 +14,19 @@ namespace MeshWarrior
 
 		virtual double ShortestSignedDistanceToPoint(const Vector& point) const = 0;
 		virtual bool ContainsPoint(const Vector& point, double eps = 1e-5) const;
+		virtual Shape* IntersectWith(const Shape* shape) const;
+	};
+
+	class MESH_WARRIOR_API Point : public Shape
+	{
+	public:
+		Point();
+		Point(const Vector& center);
+		virtual ~Point();
+
+		virtual double ShortestSignedDistanceToPoint(const Vector& point) const override;
+
+		Vector center;
 	};
 
 	class MESH_WARRIOR_API Plane : public Shape
@@ -23,6 +36,7 @@ namespace MeshWarrior
 		Plane(const Vector& center, const Vector& normal);
 
 		virtual double ShortestSignedDistanceToPoint(const Vector& point) const override;
+		virtual Shape* IntersectWith(const Shape* shape) const override;
 
 		Vector center;
 		Vector unitNormal;
@@ -58,6 +72,7 @@ namespace MeshWarrior
 	public:
 		LineSegment();
 		LineSegment(const Vector& center, const Vector& normal, double radius);
+		LineSegment(const Vector& pointA, const Vector& pointB);
 		virtual ~LineSegment();
 
 		virtual double ShortestSignedDistanceToPoint(const Vector& point) const override;

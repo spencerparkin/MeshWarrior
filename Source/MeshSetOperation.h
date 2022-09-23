@@ -3,6 +3,7 @@
 #include "MeshOperation.h"
 #include "BoundingBoxTree.h"
 #include "Mesh.h"
+#include "Polygon.h"
 #include <set>
 
 namespace MeshWarrior
@@ -28,10 +29,15 @@ namespace MeshWarrior
 				FAMILY_B
 			};
 
+			Face(Family family);
 			Face(Family family, const Mesh::ConvexPolygon& polygon);
 			virtual ~Face();
 
 			virtual AxisAlignedBox CalcBoundingBox() const override;
+
+			// Vertex color/texture information, etc., is lost here.
+			void ToBasicPolygon(Polygon& polygon) const;
+			void FromBasicPolygon(const Polygon& polygon);
 
 			Family family;
 			Mesh::ConvexPolygon polygon;
