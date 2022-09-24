@@ -193,7 +193,7 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 	Shape* shape = polygonA.IntersectWith(&polygonB);
 	if (shape)
 	{
-		delete shape;
+		delete shape; // TODO: No, I think we need to save these for the second phase of the algorithm.
 
 		Plane planeA, planeB;
 		polygonA.CalcPlane(planeA);
