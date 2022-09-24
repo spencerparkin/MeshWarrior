@@ -9,9 +9,20 @@ Polygon::Polygon()
 	this->vertexArray = new std::vector<Vector>();
 }
 
+Polygon::Polygon(const Polygon& polygon)
+{
+	this->vertexArray = new std::vector<Vector>();
+	*this->vertexArray = *polygon.vertexArray;
+}
+
 /*virtual*/ Polygon::~Polygon()
 {
 	delete this->vertexArray;
+}
+
+void Polygon::operator=(const Polygon& polygon)
+{
+	*this->vertexArray = *polygon.vertexArray;
 }
 
 // Note that we're not catching certain cases of degenerate polygons here,
@@ -228,43 +239,39 @@ bool ConvexPolygon::GenerateEdgePlaneArray(std::vector<Plane>& edgePlaneArray) c
 		// We don't count here the case where the two polygons are the same polygon,
 		// or the case where they share just a single point, or the case where just
 		// an edge of one polygon is contained, fully or partially, in the other.
+		// We just care about a non-trivial intersection case.
 
-		Point* pointA = nullptr;
-		Point* pointB = nullptr;
+		std::vector<Point*> pointList;
+		const Polygon* polygons[2] = { this, polygon };
 
-		Plane plane;
-		polygon->CalcPlane(plane);
-
-		for (int i = 0; i < (signed)this->vertexArray->size(); i++)
+		for (int i = 0; i < 2; i++)
 		{
-			int j = (i + 1) % this->vertexArray->size();
-			LineSegment edge((*this->vertexArray)[i], (*this->vertexArray)[j]);
-			pointA = (Point*)plane.IntersectWith(&edge);
-			if (pointA)
-				break;
+			const Polygon* polygonA = polygons[i];
+			const Polygon* polygonB = polygons[1 - i];
+
+			Plane plane;
+			polygonB->CalcPlane(plane);
+
+			for (int j = 0; j < (signed)polygonA->vertexArray->size(); j++)
+			{
+				int k = (j + 1) % polygonA->vertexArray->size();
+				LineSegment edge((*polygonA->vertexArray)[j], (*polygonA->vertexArray)[k]);
+				Point* point = (Point*)plane.IntersectWith(&edge);
+				if (point)
+				{
+					if (polygonB->ContainsPoint(point->center))
+						pointList.push_back(point);
+					else
+						delete point;
+				}
+			}
 		}
 
-		if (pointA)
-		{
-			this->CalcPlane(plane);
-
-			for (int i = 0; i < (signed)polygon->vertexArray->size(); i++)
-			{
-				int j = (i + 1) % polygon->vertexArray->size();
-				LineSegment edge((*this->vertexArray)[i], (*this->vertexArray)[j]);
-				pointB = (Point*)plane.IntersectWith(&edge);
-				if (pointB)
-					break;
-			}
-
-			if (pointB)
-			{
-				intersection = new LineSegment(pointA->center, pointB->center);
-				delete pointB;
-			}
-
-			delete pointA;
-		}
+		if (pointList.size() == 2)
+			intersection = new LineSegment(pointList[0]->center, pointList[1]->center);
+	
+		for (Point* point : pointList)
+			delete point;
 	}
 
 	return intersection;

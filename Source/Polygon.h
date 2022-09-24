@@ -14,7 +14,10 @@ namespace MeshWarrior
 	{
 	public:
 		Polygon();
+		Polygon(const Polygon& polygon);
 		virtual ~Polygon();
+
+		void operator=(const Polygon& polygon);
 
 		virtual double ShortestSignedDistanceToPoint(const Vector& point) const override;
 		virtual bool ContainsPoint(const Vector& point, double eps = 1e-5) const override;

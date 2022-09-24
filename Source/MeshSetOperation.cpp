@@ -164,7 +164,7 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 #if true
 	OBJFormat objFormat;
 	objFormat.Save("refined_mesh_A.obj", *refinedMeshA);
-	objFormat.Save("refined_mesh_b.obj", *refinedMeshB);
+	objFormat.Save("refined_mesh_B.obj", *refinedMeshB);
 #endif
 
 	// TODO: Now create a mesh graph for the A faces and a mesh graph for the B faces.
@@ -253,11 +253,15 @@ void MeshSetOperation::Face::ToBasicPolygon(Polygon& polygon) const
 
 void MeshSetOperation::Face::FromBasicPolygon(const Polygon& polygon)
 {
+	Plane plane;
+	polygon.CalcPlane(plane);
+
 	this->polygon.vertexArray.clear();
 	for (const Vector& point : *polygon.vertexArray)
 	{
 		Mesh::Vertex vertex;
 		vertex.point = point;
+		vertex.normal = plane.unitNormal;
 		this->polygon.vertexArray.push_back(vertex);
 	}
 }
