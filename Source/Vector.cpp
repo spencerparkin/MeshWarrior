@@ -76,13 +76,13 @@ Vector& Vector::Cross(const Vector& vectorA, const Vector& vectorB)
 {
 	this->x = vectorA.y * vectorB.z - vectorA.z * vectorB.y;
 	this->y = vectorA.z * vectorB.x - vectorA.x * vectorB.z;
-	this->z = vectorA.x * vectorB.y - vectorA.y * vectorB.z;
+	this->z = vectorA.x * vectorB.y - vectorA.y * vectorB.x;
 	return *this;
 }
 
 /*static*/ double Vector::Dot(const Vector& vectorA, const Vector& vectorB)
 {
-	return vectorA.x * vectorB.x + vectorA.y * vectorB.y + vectorA.z * vectorA.z;
+	return vectorA.x * vectorB.x + vectorA.y * vectorB.y + vectorA.z * vectorB.z;
 }
 
 Vector& Vector::Add(const Vector& vectorA, const Vector& vectorB)
@@ -119,7 +119,7 @@ Vector& Vector::Divide(const Vector& vector, double scalar)
 
 Vector& Vector::Project(const Vector& vectorA, const Vector& vectorB)
 {
-	this->Multiply(vectorB, Dot(*this, vectorA));
+	this->Multiply(vectorB, Dot(vectorB, vectorA));
 	return *this;
 }
 

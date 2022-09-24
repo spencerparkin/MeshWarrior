@@ -3,6 +3,7 @@
 #include "Defines.h"
 #include "Vector.h"
 #include "Shape.h"
+#include "Mesh.h"
 #include <vector>
 
 namespace MeshWarrior
@@ -48,7 +49,7 @@ namespace MeshWarrior
 		virtual void Tessellate(std::vector<ConvexPolygon>& polygonArray) const override;
 
 		bool GenerateEdgePlaneArray(std::vector<Plane>& edgePlaneArray) const;
-
+		void AddMeshPolygon(std::vector<Mesh::ConvexPolygon>& polygonList, const Vector& color) const;
 		bool SplitAgainstPlane(const Plane& plane, std::vector<ConvexPolygon>& polygonArray) const;
 	};
 }

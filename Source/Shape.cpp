@@ -1,4 +1,5 @@
 #include "Shape.h"
+#include <assert.h>
 
 using namespace MeshWarrior;
 
@@ -80,7 +81,12 @@ Plane::Plane(const Vector& center, const Vector& normal)
 
 				// We still have to check here, because we could be a line segment.
 				if (line->ContainsPoint(point))
+				{
+					// Sanity check: Is the point on the plane?
+					assert(this->ContainsPoint(point));
+
 					return new Point(point);
+				}
 			}
 		}
 	}
@@ -157,7 +163,9 @@ LineSegment::LineSegment(const Vector& center, const Vector& normal, double radi
 LineSegment::LineSegment(const Vector& pointA, const Vector& pointB)
 {
 	this->center = (pointA + pointB) / 2.0;
-	this->radius = (pointA - pointB).Length() / 2.0;
+	this->unitNormal = pointB - pointA;
+	this->unitNormal.Normalize(nullptr, &this->radius);
+	this->radius /= 2.0;
 }
 
 /*virtual*/ LineSegment::~LineSegment()

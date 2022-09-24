@@ -270,6 +270,25 @@ bool ConvexPolygon::GenerateEdgePlaneArray(std::vector<Plane>& edgePlaneArray) c
 	return intersection;
 }
 
+void ConvexPolygon::AddMeshPolygon(std::vector<Mesh::ConvexPolygon>& polygonList, const Vector& color) const
+{
+	Mesh::ConvexPolygon polygon;
+
+	Plane plane;
+	this->CalcPlane(plane);
+
+	for (int i = 0; i < (signed)this->vertexArray->size(); i++)
+	{
+		Mesh::Vertex vertex;
+		vertex.point = (*this->vertexArray)[i];
+		vertex.color = color;
+		vertex.normal = plane.unitNormal;
+		polygon.vertexArray.push_back(vertex);
+	}
+
+	polygonList.push_back(polygon);
+}
+
 bool ConvexPolygon::SplitAgainstPlane(const Plane& plane, std::vector<ConvexPolygon>& polygonArray) const
 {
 	std::vector<Vector> pointArray;

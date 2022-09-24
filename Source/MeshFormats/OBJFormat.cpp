@@ -146,6 +146,7 @@ void OBJFormat::LookupAndAssign(const std::vector<Vector>& vectorArray, int i, V
 
 	for (int i = 0; i < mesh.GetNumVertices(); i++)
 	{
+		// TODO: Output vertex colors too?
 		const Mesh::Vertex* vertex = mesh.GetVertex(i);
 		fileStream << "v " << vertex->point.x << " " << vertex->point.y << " " << vertex->point.z << "\n";
 	}
@@ -171,15 +172,18 @@ void OBJFormat::LookupAndAssign(const std::vector<Vector>& vectorArray, int i, V
 	for (int i = 0; i < mesh.GetNumFaces(); i++)
 	{
 		const Mesh::Face* face = mesh.GetFace(i);
-		fileStream << "f ";
-
-		for (int j = 0; j < (signed)face->vertexArray.size(); j++)
+		if (face->vertexArray.size() >= 3)
 		{
-			int vertex_i = face->vertexArray[j] + 1;		// Needs to be 1-based, not 0-based.
-			fileStream << vertex_i << "/" << vertex_i << "/" << vertex_i << " ";
-		}
+			fileStream << "f ";
 
-		fileStream << "\n";
+			for (int j = 0; j < (signed)face->vertexArray.size(); j++)
+			{
+				int vertex_i = face->vertexArray[j] + 1;		// Needs to be 1-based, not 0-based.
+				fileStream << vertex_i << "/" << vertex_i << "/" << vertex_i << " ";
+			}
+
+			fileStream << "\n";
+		}
 	}
 
 	fileStream.close();
