@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Defines.h"
+#include "FileObject.h"
 #include "Vector.h"
 #include <vector>
 #include <map>
@@ -8,7 +8,7 @@
 
 namespace MeshWarrior
 {
-	class MESH_WARRIOR_API Mesh
+	class MESH_WARRIOR_API Mesh : public FileObject
 	{
 		friend class Index;
 

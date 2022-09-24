@@ -1,4 +1,4 @@
-#include "MeshFormats/OBJFormat.h"
+#include "FileFormats/OBJFormat.h"
 #include "MeshOperations/MeshUnionOperation.h"
 #include "MeshOperations/MeshIntersectionOperation.h"
 #include "MeshOperations/MeshDifferenceOperation.h"
@@ -11,8 +11,8 @@ int main()
 
 	OBJFormat objFormat;
 
-	Mesh* meshA = objFormat.Load("BoxA.OBJ");
-	Mesh* meshB = objFormat.Load("BoxB.OBJ");
+	Mesh* meshA = objFormat.LoadMesh("BoxA.OBJ");
+	Mesh* meshB = objFormat.LoadMesh("BoxB.OBJ");
 
 	Mesh* meshResult = nullptr;
 	MeshOperation* meshOp = new MeshUnionOperation();
@@ -25,7 +25,7 @@ int main()
 
 	if (meshResult)
 	{
-		objFormat.Save("Result.OBJ", *meshResult);
+		objFormat.SaveMesh("Result.OBJ", *meshResult);
 		delete meshResult;
 	}
 

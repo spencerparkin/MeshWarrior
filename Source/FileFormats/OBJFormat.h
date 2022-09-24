@@ -1,22 +1,23 @@
 #pragma once
 
-#include "../MeshFormat.h"
+#include "../FileFormat.h"
 #include "../Vector.h"
 #include "../Mesh.h"
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <string>
 
 namespace MeshWarrior
 {
-	class MESH_WARRIOR_API OBJFormat : public MeshFormat
+	class MESH_WARRIOR_API OBJFormat : public FileFormat
 	{
 	public:
 		OBJFormat();
 		virtual ~OBJFormat();
 
-		virtual Mesh* Load(const std::string& meshFile) override;
-		virtual bool Save(const std::string& meshFile, const Mesh& mesh) override;
+		virtual bool Load(const std::string& meshFile, std::vector<FileObject*>& fileObjectArray) override;
+		virtual bool Save(const std::string& meshFile, const std::vector<FileObject*>& fileObjectArray) override;
 
 	private:
 
@@ -27,12 +28,17 @@ namespace MeshWarrior
 			std::vector<Vector> colorArray;
 			std::vector<Vector> texCoordsArray;
 			std::vector<Mesh::ConvexPolygon> polygonArray;
+			std::string name;
 		};
 
 		Data* data;
+		int totalVertices;
+		int totalFaces;
 
 		void TokenizeLine(const std::string& line, char delimeter, std::vector<std::string>& tokenArray, bool stripEmptyTokens);
-		void ProcessTokenizedLine(const std::vector<std::string>& tokenArray, Mesh* mesh);
+		void ProcessTokenizedLine(const std::vector<std::string>& tokenArray, std::vector<FileObject*>& fileObjectArray);
 		void LookupAndAssign(const std::vector<Vector>& vectorArray, int i, Vector& result);
+		void FlushMesh(std::vector<FileObject*>& fileObjectArray);
+		void DumpMesh(std::ofstream& fileStream, const Mesh* mesh);
 	};
 }

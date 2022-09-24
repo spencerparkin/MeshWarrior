@@ -1,6 +1,6 @@
 #include "MeshSetOperation.h"
 #include "Mesh.h"
-#include "MeshFormats/OBJFormat.h"
+#include "FileFormats/OBJFormat.h"	// DEBUG INCLUDE
 #include <set>
 
 using namespace MeshWarrior;
@@ -163,8 +163,8 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 	// For debugging purposes, dump the refined meshes for examination.
 #if true
 	OBJFormat objFormat;
-	objFormat.Save("refined_mesh_A.obj", *refinedMeshA);
-	objFormat.Save("refined_mesh_B.obj", *refinedMeshB);
+	objFormat.SaveMesh("refined_mesh_A.obj", *refinedMeshA);
+	objFormat.SaveMesh("refined_mesh_B.obj", *refinedMeshB);
 #endif
 
 	// TODO: Now create a mesh graph for the A faces and a mesh graph for the B faces.

@@ -5,11 +5,11 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Source\MeshFormats">
-      <UniqueIdentifier>{10059749-20ea-4194-b791-f82e26d252cb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\MeshOperations">
       <UniqueIdentifier>{ea8c2d11-6473-4263-a436-b899427f02e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\FileFormats">
+      <UniqueIdentifier>{10059749-20ea-4194-b791-f82e26d252cb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -22,11 +22,8 @@
     <ClInclude Include="Source\Vector.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Source\MeshFormat.h">
+    <ClInclude Include="Source\FileFormat.h">
       <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\MeshFormats\OBJFormat.h">
-      <Filter>Source\MeshFormats</Filter>
     </ClInclude>
     <ClInclude Include="Source\MeshTopology.h">
       <Filter>Source</Filter>
@@ -67,6 +64,12 @@
     <ClInclude Include="Source\AlgebraicSurface.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="Source\FileFormats\OBJFormat.h">
+      <Filter>Source\FileFormats</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\FileObject.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Vector.cpp">
@@ -75,10 +78,7 @@
     <ClCompile Include="Source\Mesh.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Source\MeshFormats\OBJFormat.cpp">
-      <Filter>Source\MeshFormats</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\MeshFormat.cpp">
+    <ClCompile Include="Source\FileFormat.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Source\MeshTopology.cpp">
@@ -115,6 +115,12 @@
       <Filter>Source\MeshOperations</Filter>
     </ClCompile>
     <ClCompile Include="Source\AlgebraicSurface.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\FileFormats\OBJFormat.cpp">
+      <Filter>Source\FileFormats</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\FileObject.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
