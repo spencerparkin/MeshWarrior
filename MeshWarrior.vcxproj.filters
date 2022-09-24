@@ -64,6 +64,9 @@
     <ClInclude Include="Source\MeshOperations\MeshMergeOperation.h">
       <Filter>Source\MeshOperations</Filter>
     </ClInclude>
+    <ClInclude Include="Source\AlgebraicSurface.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Vector.cpp">
@@ -110,6 +113,9 @@
     </ClCompile>
     <ClCompile Include="Source\MeshOperations\MeshMergeOperation.cpp">
       <Filter>Source\MeshOperations</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\AlgebraicSurface.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

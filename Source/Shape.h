@@ -5,7 +5,6 @@
 
 namespace MeshWarrior
 {
-	// It might be possible generate a mesh using the interface of this base class.
 	class MESH_WARRIOR_API Shape
 	{
 	public:

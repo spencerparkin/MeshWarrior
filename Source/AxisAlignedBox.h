@@ -2,10 +2,11 @@
 
 #include "Defines.h"
 #include "Vector.h"
+#include "Shape.h"
 
 namespace MeshWarrior
 {
-	class MESH_WARRIOR_API AxisAlignedBox
+	class MESH_WARRIOR_API AxisAlignedBox : public Shape
 	{
 	public:
 		AxisAlignedBox();
@@ -16,7 +17,8 @@ namespace MeshWarrior
 
 		bool IsValid() const;
 
-		bool ContainsPoint(const Vector& point) const;
+		virtual double ShortestSignedDistanceToPoint(const Vector& point) const override;
+		virtual bool ContainsPoint(const Vector& point, double eps = 0.0) const override;
 		bool ContainsPointOnBoundary(const Vector& point, double eps = 1e-6) const;
 		bool ContainsBox(const AxisAlignedBox& box) const;
 

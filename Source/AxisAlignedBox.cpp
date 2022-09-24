@@ -47,7 +47,13 @@ bool AxisAlignedBox::IsValid() const
 	return true;
 }
 
-bool AxisAlignedBox::ContainsPoint(const Vector& point) const
+/*virtual*/ double AxisAlignedBox::ShortestSignedDistanceToPoint(const Vector& point) const
+{
+	// TODO: Write this.
+	return 0.0;
+}
+
+/*virtual*/ bool AxisAlignedBox::ContainsPoint(const Vector& point, double eps /*= 0.0*/) const
 {
 	if (this->min.x <= point.x && point.x <= this->max.x &&
 		this->min.y <= point.y && point.y <= this->max.y &&

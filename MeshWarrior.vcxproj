@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\AlgebraicSurface.h" />
     <ClInclude Include="Source\AxisAlignedBox.h" />
     <ClInclude Include="Source\BoundingBoxTree.h" />
     <ClInclude Include="Source\Polygon.h" />
@@ -170,6 +171,7 @@
     <ClInclude Include="Source\Vector.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\AlgebraicSurface.cpp" />
     <ClCompile Include="Source\AxisAlignedBox.cpp" />
     <ClCompile Include="Source\BoundingBoxTree.cpp" />
     <ClCompile Include="Source\Polygon.cpp" />
