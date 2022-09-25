@@ -25,8 +25,7 @@ void Polygon::operator=(const Polygon& polygon)
 	*this->vertexArray = *polygon.vertexArray;
 }
 
-// Note that we're not catching certain cases of degenerate polygons here,
-// such as those with zero area.
+// Note that we're not catching certain cases of degenerate polygons here.
 /*virtual*/ bool Polygon::IsValid() const
 {
 	if (this->vertexArray->size() < 3)

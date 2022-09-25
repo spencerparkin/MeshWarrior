@@ -29,12 +29,22 @@ bool BoundingBoxTree::AddGuest(Guest* guest)
 	return this->rootNode->AddGuest(guest);
 }
 
-void BoundingBoxTree::FindGuests(const AxisAlignedBox& box, std::list<Guest*>& foundGuestList)
+void BoundingBoxTree::FindGuests(const AxisAlignedBox& box, std::list<Guest*>& foundGuestList) const
 {
 	foundGuestList.clear();
 
 	if (this->rootNode)
 		this->rootNode->FindGuests(box, foundGuestList);
+}
+
+int BoundingBoxTree::TotalGuests() const
+{
+	int total = 0;
+
+	if (this->rootNode)
+		this->rootNode->TallyGuests(total);
+
+	return total;
 }
 
 void BoundingBoxTree::Clear()
@@ -84,16 +94,25 @@ bool BoundingBoxTree::Node::AddGuest(Guest* guest)
 	return true;
 }
 
-void BoundingBoxTree::Node::FindGuests(const AxisAlignedBox& box, std::list<Guest*>& foundGuestList)
+void BoundingBoxTree::Node::FindGuests(const AxisAlignedBox& box, std::list<Guest*>& foundGuestList) const
 {
 	if (!this->boundingBox.OverlapsWith(box))
 		return;
 
 	for (int i = 0; i < 2; i++)
 		if (this->node[i])
-			this->node[i]->FindGuests(box, guestList);
+			this->node[i]->FindGuests(box, foundGuestList);
 
 	for (Guest* guest : this->guestList)
 		if (box.OverlapsWith(guest->CalcBoundingBox()))
 			foundGuestList.push_back(guest);
+}
+
+void BoundingBoxTree::Node::TallyGuests(int& tally) const
+{
+	tally += this->guestList.size();
+
+	for (int i = 0; i < 2; i++)
+		if (this->node[i])
+			this->node[i]->TallyGuests(tally);
 }

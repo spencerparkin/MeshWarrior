@@ -70,6 +70,9 @@
     <ClInclude Include="Source\FileObject.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="Source\TypeHeap.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Vector.cpp">

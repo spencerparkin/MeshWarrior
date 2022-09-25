@@ -23,8 +23,9 @@ namespace MeshWarrior
 
 		void SetRootBox(const AxisAlignedBox& box);
 		bool AddGuest(Guest* guest);
-		void FindGuests(const AxisAlignedBox& box, std::list<Guest*>& foundGuestList);
+		void FindGuests(const AxisAlignedBox& box, std::list<Guest*>& foundGuestList) const;
 		void Clear();
+		int TotalGuests() const;
 
 	private:
 		
@@ -35,7 +36,8 @@ namespace MeshWarrior
 			virtual ~Node();
 
 			bool AddGuest(Guest* guest);
-			void FindGuests(const AxisAlignedBox& box, std::list<Guest*>& foundGuestList);
+			void FindGuests(const AxisAlignedBox& box, std::list<Guest*>& foundGuestList) const;
+			void TallyGuests(int& tally) const;
 
 			AxisAlignedBox boundingBox;
 			Node* node[2];

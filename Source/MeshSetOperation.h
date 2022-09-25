@@ -4,6 +4,7 @@
 #include "BoundingBoxTree.h"
 #include "Mesh.h"
 #include "Polygon.h"
+#include "TypeHeap.h"
 #include <set>
 
 namespace MeshWarrior
@@ -29,8 +30,7 @@ namespace MeshWarrior
 				FAMILY_B
 			};
 
-			Face(Family family);
-			Face(Family family, const Mesh::ConvexPolygon& polygon);
+			Face();
 			virtual ~Face();
 
 			virtual AxisAlignedBox CalcBoundingBox() const override;
@@ -59,7 +59,7 @@ namespace MeshWarrior
 		void ProcessCollisionPair(const CollisionPair& pair, std::set<Face*>& newFaceSetA, std::set<Face*>& newFaceSetB);
 
 		std::set<Face*>* faceSet;
-
-		BoundingBoxTree tree;
+		TypeHeap<Face>* faceHeap;
+		BoundingBoxTree faceTree;
 	};
 }

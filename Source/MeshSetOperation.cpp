@@ -2,20 +2,23 @@
 #include "Mesh.h"
 #include "FileFormats/OBJFormat.h"	// DEBUG INCLUDE
 #include <set>
+#include <assert.h>
 
 using namespace MeshWarrior;
 
 MeshSetOperation::MeshSetOperation()
 {
 	this->faceSet = new std::set<Face*>();
+	this->faceHeap = new StackHeap<Face>(1024);	// TODO: Use regular heap in release?
 }
 
 /*virtual*/ MeshSetOperation::~MeshSetOperation()
 {
 	for (Face* face : *this->faceSet)
-		delete face;
+		this->faceHeap->Deallocate(face);
 
 	delete this->faceSet;
+	delete this->faceHeap;
 }
 
 void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
@@ -31,10 +34,20 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 	meshB->ToPolygonArray(polygonArrayB);
 
 	for (Mesh::ConvexPolygon& polygon : polygonArrayA)
-		this->faceSet->insert(new Face(Face::FAMILY_A, polygon));
+	{
+		Face* face = this->faceHeap->Allocate();
+		face->family = Face::FAMILY_A;
+		face->polygon = polygon;
+		this->faceSet->insert(face);
+	}
 
 	for (Mesh::ConvexPolygon& polygon : polygonArrayB)
-		this->faceSet->insert(new Face(Face::FAMILY_B, polygon));
+	{
+		Face* face = this->faceHeap->Allocate();
+		face->family = Face::FAMILY_B;
+		face->polygon = polygon;
+		this->faceSet->insert(face);
+	}
 
 	//
 	// Throw all the faces into a spacial sorting data-structure.
@@ -46,11 +59,14 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 	for (Face* face : *this->faceSet)
 		rootBox.MinimallyExpandToContainBox(face->CalcBoundingBox());
 
-	this->tree.Clear();
-	this->tree.SetRootBox(rootBox);
+	this->faceTree.Clear();
+	this->faceTree.SetRootBox(rootBox);
 
 	for (Face* face : *this->faceSet)
-		this->tree.AddGuest(face);
+		this->faceTree.AddGuest(face);
+
+	int totalGuests = this->faceTree.TotalGuests();
+	assert(totalGuests == this->faceSet->size());
 
 	//
 	// Find all the initial collision pairs.
@@ -62,7 +78,7 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 		if (faceA->family == Face::FAMILY_A)
 		{
 			std::list<BoundingBoxTree::Guest*> guestList;
-			this->tree.FindGuests(faceA->CalcBoundingBox(), guestList);
+			this->faceTree.FindGuests(faceA->CalcBoundingBox(), guestList);
 
 			for (BoundingBoxTree::Guest* guest : guestList)
 			{
@@ -90,6 +106,15 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 		std::set<Face*> newFaceSetA, newFaceSetB;
 		this->ProcessCollisionPair(pair, newFaceSetA, newFaceSetB);
 
+#if false
+		Mesh debugMesh;
+		debugMesh.AddFace(pair.faceA->polygon);
+		debugMesh.AddFace(pair.faceB->polygon);
+
+		OBJFormat objFormat;
+		objFormat.SaveMesh("debug.obj", debugMesh);
+#endif
+
 		if (newFaceSetA.size() > 0 || newFaceSetB.size() > 0)
 		{
 			this->faceSet->erase(pair.faceA);
@@ -111,31 +136,49 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 
 				CollisionPair& existingPair = *iter;
 
-				if (existingPair.faceA == pair.faceA)
+				if (existingPair.faceA == pair.faceA && existingPair.faceB == pair.faceB)
+					collisionPairQueue.erase(iter);		// This shouldn't happen, but account for it anyway.
+				else if (existingPair.faceA == pair.faceA)
 				{
-					oldFaceSetB.insert(pair.faceB);
+					oldFaceSetB.insert(existingPair.faceB);
 					collisionPairQueue.erase(iter);
 				}
-
-				if (existingPair.faceB == pair.faceB)
+				else if (existingPair.faceB == pair.faceB)
 				{
-					oldFaceSetA.insert(pair.faceA);
+					oldFaceSetA.insert(existingPair.faceA);
 					collisionPairQueue.erase(iter);
 				}
 
 				iter = nextIter;
 			}
 
-			delete pair.faceA;
-			delete pair.faceB;
+			this->faceHeap->Deallocate(pair.faceA);
+			this->faceHeap->Deallocate(pair.faceB);
+
+			// Note that rather than skipping invalid polygons here, we really
+			// should just never be producing any invalid polygons.
 
 			for (Face* faceA : newFaceSetA)
+			{
+				ConvexPolygon polygon;
+				faceA->ToBasicPolygon(polygon);
+				if (!polygon.IsValid())
+					continue;
+
 				for (Face* faceB : oldFaceSetB)
 					collisionPairQueue.push_back(CollisionPair(faceA, faceB));
+			}
 
-			for (Face* faceA : oldFaceSetA)
-				for (Face* faceB : newFaceSetB)
+			for (Face* faceB : newFaceSetB)
+			{
+				ConvexPolygon polygon;
+				faceB->ToBasicPolygon(polygon);
+				if (!polygon.IsValid())
+					continue;
+
+				for (Face* faceA : oldFaceSetA)
 					collisionPairQueue.push_back(CollisionPair(faceA, faceB));
+			}
 		}
 	}
 
@@ -205,29 +248,24 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 
 		for (ConvexPolygon& newPolygonA : polygonArrayA)
 		{
-			Face* face = new Face(Face::FAMILY_A);
+			Face* face = this->faceHeap->Allocate();
+			face->family = Face::FAMILY_A;
 			face->FromBasicPolygon(newPolygonA);
 			newFaceSetA.insert(face);
 		}
 
 		for (ConvexPolygon& newPolygonB : polygonArrayB)
 		{
-			Face* face = new Face(Face::FAMILY_B);
+			Face* face = this->faceHeap->Allocate();
+			face->family = Face::FAMILY_B;
 			face->FromBasicPolygon(newPolygonB);
 			newFaceSetB.insert(face);
 		}
 	}
 }
 
-MeshSetOperation::Face::Face(Family family)
+MeshSetOperation::Face::Face()
 {
-	this->family = family;
-}
-
-MeshSetOperation::Face::Face(Family family, const Mesh::ConvexPolygon& polygon)
-{
-	this->family = family;
-	this->polygon = polygon;
 }
 
 /*virtual*/ MeshSetOperation::Face::~Face()

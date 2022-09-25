@@ -169,6 +169,7 @@
     <ClInclude Include="Source\MeshSetOperation.h" />
     <ClInclude Include="Source\MeshTopology.h" />
     <ClInclude Include="Source\Shape.h" />
+    <ClInclude Include="Source\TypeHeap.h" />
     <ClInclude Include="Source\Vector.h" />
   </ItemGroup>
   <ItemGroup>
