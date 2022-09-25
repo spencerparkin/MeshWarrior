@@ -106,15 +106,6 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 		std::set<Face*> newFaceSetA, newFaceSetB;
 		this->ProcessCollisionPair(pair, newFaceSetA, newFaceSetB);
 
-#if false
-		Mesh debugMesh;
-		debugMesh.AddFace(pair.faceA->polygon);
-		debugMesh.AddFace(pair.faceB->polygon);
-
-		OBJFormat objFormat;
-		objFormat.SaveMesh("debug.obj", debugMesh);
-#endif
-
 		if (newFaceSetA.size() > 0 || newFaceSetB.size() > 0)
 		{
 			this->faceSet->erase(pair.faceA);
@@ -234,6 +225,15 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 	ConvexPolygon polygonA, polygonB;
 	pair.faceA->ToBasicPolygon(polygonA);
 	pair.faceB->ToBasicPolygon(polygonB);
+
+#if false
+	Mesh debugMesh;
+	debugMesh.AddFace(pair.faceA->polygon);
+	debugMesh.AddFace(pair.faceB->polygon);
+
+	OBJFormat objFormat;
+	objFormat.SaveMesh("debug.obj", debugMesh);
+#endif
 
 	// Do they actually intersect in a non-trivial way?
 	Shape* shape = polygonA.IntersectWith(&polygonB);
