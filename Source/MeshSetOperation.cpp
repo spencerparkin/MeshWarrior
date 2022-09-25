@@ -219,6 +219,9 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 	//       the original thinking on the matter.  Zero or more line-loops should be
 	//       generated from the cutting process.  If zero, the situation seems non-
 	//       trivial in many cases.  Not a big deal if we require it to be non-zero.
+	//       Note that if we can't find the initial outside A face or the initial
+	//       outside B face, then it might be fair to say that the operation is ambiguous,
+	//       and therefore, cannot be completed.  Add error information.
 
 	// TODO: After determining which faces are inside/outside, maybe reverse winding of all inside faces?
 }
