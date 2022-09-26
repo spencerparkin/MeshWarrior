@@ -10,6 +10,9 @@ MeshSetOperation::MeshSetOperation()
 {
 	this->faceSet = new std::set<Face*>();
 	this->faceHeap = new StackHeap<Face>(1024);	// TODO: Use regular heap in release?
+	this->cutBoundaryArray = new std::vector<LineSegment*>();
+	this->graphA = new Graph();
+	this->graphB = new Graph();
 }
 
 /*virtual*/ MeshSetOperation::~MeshSetOperation()
@@ -19,6 +22,14 @@ MeshSetOperation::MeshSetOperation()
 
 	delete this->faceSet;
 	delete this->faceHeap;
+
+	for (LineSegment* lineSegment : *this->cutBoundaryArray)
+		delete lineSegment;
+
+	delete this->cutBoundaryArray;
+
+	this->graphA;
+	this->graphB;
 }
 
 void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
@@ -188,37 +199,64 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 			polygonArrayB.push_back(face->polygon);
 	}
 
-	Mesh* refinedMeshA = new Mesh();
-	Mesh* refinedMeshB = new Mesh();
-
-	refinedMeshA->FromPolygonArray(polygonArrayA);
-	refinedMeshB->FromPolygonArray(polygonArrayB);
+	this->refinedMeshA.FromPolygonArray(polygonArrayA);
+	this->refinedMeshB.FromPolygonArray(polygonArrayB);
 
 	// For debugging purposes, dump the refined meshes for examination.
 #if true
-	*refinedMeshA->name = "refined_mesh_A";
-	*refinedMeshB->name = "refined_mesh_B";
+	*refinedMeshA.name = "refined_mesh_A";
+	*refinedMeshB.name = "refined_mesh_B";
 	OBJFormat objFormat;
 	std::vector<FileObject*> fileObjectArray;
-	fileObjectArray.push_back(refinedMeshA);
-	fileObjectArray.push_back(refinedMeshB);
+	fileObjectArray.push_back(&refinedMeshA);
+	fileObjectArray.push_back(&refinedMeshB);
 	objFormat.Save("refined_meshes.obj", fileObjectArray);
 #endif
 
-	// TODO: Now create a mesh graph for the A faces and a mesh graph for the B faces.
-	//       Label each node of each graph as "inside" or "outside" while performing
-	//       a BFS of each graph.  Knowing when we transition from outside to inside,
-	//       or vice-versa, will require data gathered from the cutting process.  Also,
-	//       knowing the initial label of the initial node will require some work.
-	//       Note that there are two graphs here, not one.  This greatly simplifies
-	//       the original thinking on the matter.  Zero or more line-loops should be
-	//       generated from the cutting process.  If zero, the situation seems non-
-	//       trivial in many cases.  Not a big deal if we require it to be non-zero.
-	//       Note that if we can't find the initial outside A face or the initial
-	//       outside B face, then it might be fair to say that the operation is ambiguous,
-	//       and therefore, cannot be completed.  Add error information.
+	//
+	// Now generate a graph for each refined mesh.  This makes it easier for
+	// us to traverse over the surface of each refined mesh.
+	//
 
-	// TODO: After determining which faces are inside/outside, maybe reverse winding of all inside faces?
+	this->graphA->Generate(&this->refinedMeshA);
+	this->graphB->Generate(&this->refinedMeshB);
+
+	//
+	// Gather the nodes from both graphs into one list.
+	//
+
+	std::list<Graph::Node*> nodeList;
+
+	this->graphA->ForAllElements([&nodeList](MeshGraph::GraphElement* element) -> bool {
+		Graph::Node* node = dynamic_cast<Graph::Node*>(element);
+		if (node)
+			nodeList.push_back(node);
+		return false;
+	});
+
+	this->graphB->ForAllElements([&nodeList](MeshGraph::GraphElement* element) -> bool {
+		Graph::Node* node = dynamic_cast<Graph::Node*>(element);
+		if (node)
+			nodeList.push_back(node);
+		return false;
+	});
+
+	//
+	// Find a face on refined mesh A that we believe to be on the outside.
+	// Do the same for refined mesh B.
+	//
+
+	Graph::Node* outsideNodeA = nullptr;
+	Graph::Node* outsideNodeB = nullptr;
+
+	//
+	// Finally, color the graphs.  That is, determine whether each node is inside or outside.
+	// We do this with a BFS starting from a known outside node.  Whenever we cross a cut
+	// boundary, we switch from outside to inside, or vise-versa.
+	//
+
+	this->ColorGraph(outsideNodeA);
+	this->ColorGraph(outsideNodeB);
 }
 
 void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<Face*>& newFaceSetA, std::set<Face*>& newFaceSetB)
@@ -234,7 +272,10 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 	Shape* shape = polygonA.IntersectWith(&polygonB);
 	if (shape)
 	{
-		delete shape; // TODO: No, I think we need to save these for the second phase of the algorithm.
+		// Store the intersection for later use.  We'll need it when coloring the graph.
+		LineSegment* lineSegment = dynamic_cast<LineSegment*>(shape);
+		assert(lineSegment);
+		this->cutBoundaryArray->push_back(lineSegment);
 
 		Plane planeA, planeB;
 		polygonA.CalcPlane(planeA);
@@ -262,6 +303,41 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 	}
 }
 
+void MeshSetOperation::ColorGraph(Graph::Node* rootNode)
+{
+	assert(rootNode->side != Graph::Node::UNKNOWN);
+
+	std::list<Graph::Node*> nodeQueue;
+	nodeQueue.push_back(rootNode);
+
+	while (nodeQueue.size() > 0)
+	{
+		std::list<Graph::Node*>::iterator iter = nodeQueue.begin();
+		Graph::Node* node = *iter;
+		nodeQueue.erase(iter);
+
+		for (int i = 0; i < (int)node->edgeArray.size(); i++)
+		{
+			Graph::Edge* edge = node->edgeArray[i];
+			Graph::Node* adjacentNode = (Graph::Node*)edge->GetOtherAdjacency(node);
+			if (adjacentNode->side == Graph::Node::UNKNOWN)
+			{
+				LineSegment edgeSegment(edge->GetVertex(0)->point, edge->GetVertex(1)->point);
+
+				// Does a point exist on both the edge and a cut-boundary line-segment?
+				bool found = false;
+				//...
+				if (found)
+					adjacentNode->side = node->OppositeSide();
+				else
+					adjacentNode->side = node->side;
+
+				nodeQueue.push_back(node);
+			}
+		}
+	}
+}
+
 MeshSetOperation::Face::Face()
 {
 }
@@ -278,4 +354,36 @@ MeshSetOperation::Face::Face()
 		box.MinimallyExpandToContainPoint(this->polygon.vertexArray[i].point);
 
 	return box;
+}
+
+MeshSetOperation::Graph::Graph()
+{
+}
+
+/*virtual*/ MeshSetOperation::Graph::~Graph()
+{
+}
+
+/*virtual*/ MeshGraph::Node* MeshSetOperation::Graph::NodeFactory()
+{
+	return new MeshSetOperation::Graph::Node(this);
+}
+
+MeshSetOperation::Graph::Node::Node(MeshGraph* meshGraph) : MeshGraph::Node(meshGraph)
+{
+	this->side = Side::UNKNOWN;
+}
+
+/*virtual*/ MeshSetOperation::Graph::Node::~Node()
+{
+}
+
+MeshSetOperation::Graph::Node::Side MeshSetOperation::Graph::Node::OppositeSide() const
+{
+	if (this->side == Side::OUTSIDE)
+		return Side::INSIDE;
+	else if (this->side == Side::INSIDE)
+		return Side::OUTSIDE;
+
+	return Side::UNKNOWN;
 }

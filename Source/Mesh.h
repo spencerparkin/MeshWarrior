@@ -82,7 +82,9 @@ namespace MeshWarrior
 		std::vector<Vertex>* vertexArray;
 		std::vector<Face>* faceArray;
 
-		// TODO: Create an index based on a BSP tree.
+		// TODO: Create an index based on a BSP tree.  Maybe?  The main limitation of
+		//       this index is that it requires an exact match.  Sometimes we need a
+		//       bit of tolerance when looking, approximately, for a given vertex.
 		class Index
 		{
 		public:

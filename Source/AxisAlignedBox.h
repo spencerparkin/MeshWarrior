@@ -23,6 +23,7 @@ namespace MeshWarrior
 		bool ContainsBox(const AxisAlignedBox& box) const;
 
 		void ScaleAboutCenter(double delta);
+		void AddMargin(double delta);
 
 		void MinimallyExpandToContainPoint(const Vector& point);
 		void MinimallyExpandToContainBox(const AxisAlignedBox& box);

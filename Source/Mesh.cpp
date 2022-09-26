@@ -112,7 +112,7 @@ void Mesh::AddFace(const ConvexPolygon& convexPolygon, double eps /*= 1e-6*/)
 {
 	Face face;
 	for (const Vertex& vertex : convexPolygon.vertexArray)
-		face.vertexArray.push_back(this->FindOrCreateVertex(vertex));
+		face.vertexArray.push_back(this->FindOrCreateVertex(vertex, true, eps));
 
 	this->faceArray->push_back(face);
 }

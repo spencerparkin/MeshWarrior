@@ -43,7 +43,11 @@ void MeshGraph::Generate(const Mesh* mesh)
 	{
 		Face* face = (Face*)guest;
 		AxisAlignedBox boundingBox = face->CalcBoundingBox();
-		// TODO: Fatten the bounding box, accounting for boxes that may have zero width/height/depth in some dimensions.
+		
+		// Fatten the box so that we're sure to overlap with the bounding
+		// boxes of all faces adjacent to this face.
+		boundingBox.AddMargin(0.5);
+		boundingBox.ScaleAboutCenter(2.0);
 
 		std::list<BoundingBoxTree::Guest*> foundGuestList;
 		tree.FindGuests(boundingBox, foundGuestList);
@@ -151,6 +155,15 @@ void MeshGraph::Clear()
 	return new Edge(this);
 }
 
+bool MeshGraph::ForAllElements(std::function<bool(GraphElement*)> iterationFunc)
+{
+	for (GraphElement* element : *this->graphElementArray)
+		if (iterationFunc(element))
+			return true;
+
+	return false;
+}
+
 //--------------------------------- GraphElement ---------------------------------
 
 MeshGraph::GraphElement::GraphElement(MeshGraph* meshGraph)
@@ -236,6 +249,16 @@ MeshGraph::Edge::Edge(MeshGraph* meshGraph) : GraphElement(meshGraph)
 const Mesh::Vertex* MeshGraph::Edge::GetVertex(int i)
 {
 	return this->edgeVertex[i % 2]->GetVertex();
+}
+
+MeshGraph::Node* MeshGraph::Edge::GetOtherAdjacency(Node* adjacency)
+{
+	if (this->adjacentNode[0] == adjacency)
+		return this->adjacentNode[1];
+	else if (this->adjacentNode[1] == adjacency)
+		return this->adjacentNode[0];
+	else
+		return nullptr;
 }
 
 //--------------------------------- Face ---------------------------------

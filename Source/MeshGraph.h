@@ -4,6 +4,7 @@
 #include "Mesh.h"
 #include "BoundingBoxTree.h"
 #include <vector>
+#include <functional>
 
 namespace MeshWarrior
 {
@@ -86,6 +87,7 @@ namespace MeshWarrior
 			virtual ~Edge();
 
 			const Mesh::Vertex* GetVertex(int i);
+			Node* GetOtherAdjacency(Node* adjacency);
 
 			Node* adjacentNode[2];
 			EdgeVertex* edgeVertex[2];
@@ -101,6 +103,8 @@ namespace MeshWarrior
 
 			Node* node;
 		};
+
+		bool ForAllElements(std::function<bool(GraphElement*)> iterationFunc);
 
 	private:
 		Edge* FindCommonEdge(Node* nodeA, Node* nodeB);

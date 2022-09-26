@@ -94,6 +94,13 @@ void AxisAlignedBox::ScaleAboutCenter(double delta)
 	}
 }
 
+void AxisAlignedBox::AddMargin(double delta)
+{
+	Vector deltaVec(delta, delta, delta);
+	this->min -= deltaVec;
+	this->max += deltaVec;
+}
+
 Vector AxisAlignedBox::CalcCenter() const
 {
 	return (this->min + this->max) / 2.0;
