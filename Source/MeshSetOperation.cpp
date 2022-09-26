@@ -153,7 +153,7 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 			{
 				ConvexPolygon polygon;
 				faceA->ToBasicPolygon(polygon);
-				if (!polygon.IsValid())
+				if (!polygon.IsValid(1e-4))
 					continue;
 
 				for (Face* faceB : oldFaceSetB)
@@ -164,7 +164,7 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 			{
 				ConvexPolygon polygon;
 				faceB->ToBasicPolygon(polygon);
-				if (!polygon.IsValid())
+				if (!polygon.IsValid(1e-4))
 					continue;
 
 				for (Face* faceA : oldFaceSetA)

@@ -11,8 +11,8 @@ int main()
 
 	OBJFormat objFormat;
 
-	Mesh* meshA = objFormat.LoadMesh("BoxA.OBJ");
-	Mesh* meshB = objFormat.LoadMesh("BoxB.OBJ");
+	Mesh* meshA = objFormat.LoadMesh("Sphere.OBJ");
+	Mesh* meshB = objFormat.LoadMesh("Box.OBJ");
 
 	Mesh* meshResult = nullptr;
 	MeshOperation* meshOp = new MeshUnionOperation();

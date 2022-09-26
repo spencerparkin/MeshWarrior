@@ -22,7 +22,7 @@ namespace MeshWarrior
 		virtual double ShortestSignedDistanceToPoint(const Vector& point) const override;
 		virtual bool ContainsPoint(const Vector& point, double eps = 1e-5) const override;
 
-		virtual bool IsValid() const;
+		virtual bool IsValid(double eps = 1e-5) const;
 		virtual void Tessellate(std::vector<ConvexPolygon>& polygonArray) const;
 
 		void ReverseWinding();
@@ -48,7 +48,7 @@ namespace MeshWarrior
 		virtual bool ContainsPoint(const Vector& point, double eps = 1e-5) const override;
 		virtual Shape* IntersectWith(const Shape* shape) const override;
 
-		virtual bool IsValid() const override;
+		virtual bool IsValid(double eps = 1e-5) const override;
 		virtual void Tessellate(std::vector<ConvexPolygon>& polygonArray) const override;
 
 		bool GenerateEdgePlaneArray(std::vector<Plane>& edgePlaneArray) const;

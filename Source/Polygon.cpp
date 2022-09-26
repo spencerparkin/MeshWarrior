@@ -27,7 +27,7 @@ void Polygon::operator=(const Polygon& polygon)
 }
 
 // Note that we're not catching certain cases of degenerate polygons here.
-/*virtual*/ bool Polygon::IsValid() const
+/*virtual*/ bool Polygon::IsValid(double eps /*= 1e-5*/) const
 {
 	if (this->vertexArray->size() < 3)
 		return false;
@@ -37,7 +37,7 @@ void Polygon::operator=(const Polygon& polygon)
 		return false;
 
 	for (const Vector& vertex : *this->vertexArray)
-		if (!plane.ContainsPoint(vertex))
+		if (!plane.ContainsPoint(vertex, eps))
 			return false;
 
 	return true;
@@ -146,9 +146,9 @@ ConvexPolygon::ConvexPolygon()
 {
 }
 
-/*virtual*/ bool ConvexPolygon::IsValid() const
+/*virtual*/ bool ConvexPolygon::IsValid(double eps /*= 1e-5*/) const
 {
-	if (!Polygon::IsValid())
+	if (!Polygon::IsValid(eps))
 		return false;
 
 	std::vector<Plane> edgePlaneArray;
@@ -160,7 +160,7 @@ ConvexPolygon::ConvexPolygon()
 		for (int j = 0; j < (signed)this->vertexArray->size(); j++)
 		{
 			double distance = edgePlane.ShortestSignedDistanceToPoint((*this->vertexArray)[j]);
-			if (distance > 0.0)
+			if (distance > eps)
 				return false;
 		}
 	}
