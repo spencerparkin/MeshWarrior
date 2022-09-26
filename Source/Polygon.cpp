@@ -45,14 +45,20 @@ void Polygon::operator=(const Polygon& polygon)
 
 /*virtual*/ double Polygon::ShortestSignedDistanceToPoint(const Vector& point) const
 {
-	// TODO: This is non-trivial, and requires tessellation.
+	// TODO: This is non-trivial as it requires tessellation.
 	return 0.0;
 }
 
 /*virtual*/ bool Polygon::ContainsPoint(const Vector& point, double eps /*= 1e-5*/) const
 {
-	// TODO: This is non-trivial, and requires tessellation.
+	// TODO: This is non-trivial as it requires tessellation.
 	return false;
+}
+
+/*virtual*/ double Polygon::CalcArea() const
+{
+	// TODO: This is non-trivial as it requires tessellation.
+	return 0.0f;
 }
 
 void Polygon::ReverseWinding()
@@ -229,6 +235,12 @@ bool ConvexPolygon::GenerateEdgePlaneArray(std::vector<Plane>& edgePlaneArray) c
 	return true;
 }
 
+/*virtual*/ double ConvexPolygon::CalcArea() const
+{
+	// TODO: Write this.  Should be easy.  Just add up area of triangles made from center with edges.
+	return 0.0f;
+}
+
 /*virtual*/ Shape* ConvexPolygon::IntersectWith(const Shape* shape) const
 {
 	Shape* intersection = nullptr;
@@ -268,7 +280,6 @@ bool ConvexPolygon::GenerateEdgePlaneArray(std::vector<Plane>& edgePlaneArray) c
 		}
 
 		// Remove redundant points to see how many there really are.
-		// I suppose this algorithm is a bit overkill when we know there will never be more than 4 points in the array.
 		CompressArray<Point>(pointList, [](const Point* pointA, const Point* pointB) -> Point* {
 			if (pointA->ContainsPoint(pointB->center))
 			{

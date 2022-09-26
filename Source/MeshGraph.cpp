@@ -1,4 +1,7 @@
 #include "MeshGraph.h"
+#include "Polygon.h"
+#include "Shape.h"
+#include "Compressor.h"
 
 using namespace MeshWarrior;
 
@@ -56,6 +59,7 @@ void MeshGraph::Generate(const Mesh* mesh)
 			{
 				face->node->edgeArray.push_back(edge);
 				foundFace->node->edgeArray.push_back(edge);
+				this->graphElementArray->push_back(edge);
 			}
 		}
 	}
@@ -63,7 +67,70 @@ void MeshGraph::Generate(const Mesh* mesh)
 
 MeshGraph::Edge* MeshGraph::FindCommonEdge(Node* nodeA, Node* nodeB)
 {
-	return nullptr;
+	Edge* edge = nullptr;
+
+	const Mesh::Face* faceA = this->targetMesh->GetFace(nodeA->polygon_i);
+	const Mesh::Face* faceB = this->targetMesh->GetFace(nodeB->polygon_i);
+
+	ConvexPolygon polygon[2];
+
+	faceA->GeneratePolygon(this->targetMesh).ToBasicPolygon(polygon[0]);
+	faceB->GeneratePolygon(this->targetMesh).ToBasicPolygon(polygon[1]);
+
+	std::vector<Point*> pointArray;
+
+	for (int i = 0; i < 2; i++)
+	{
+		ConvexPolygon* polygonA = &polygon[i];
+		ConvexPolygon* polygonB = &polygon[1 - i];
+
+		for (int j = 0; j < (int)polygonA->vertexArray->size(); i++)
+		{
+			const Vector& vertex = (*polygonA->vertexArray)[j];
+			if (polygonB->ContainsPoint(vertex))
+				pointArray.push_back(new Point(vertex));
+		}
+	}
+
+	// Remove redundant points to see how many there really are.
+	CompressArray<Point>(pointArray, [](const Point* pointA, const Point* pointB) -> Point* {
+		if (pointA->ContainsPoint(pointB->center))
+		{
+			delete pointB;
+			return const_cast<Point*>(pointA);
+		}
+		return nullptr;
+	});
+
+	// Do we have a shared edge?
+	if (pointArray.size() == 2)
+	{
+		edge = new Edge(this);
+		edge->adjacentNode[0] = nodeA;
+		edge->adjacentNode[1] = nodeB;
+
+		Mesh::Vertex vertexA, vertexB;
+		vertexA.point = pointArray[0]->center;
+		vertexB.point = pointArray[1]->center;
+
+		int vertexA_i = this->targetMesh->FindVertex(vertexA);
+		int vertexB_i = this->targetMesh->FindVertex(vertexB);
+
+		if (this->targetMesh->IsValidVertex(vertexA_i))
+			edge->edgeVertex[0] = new EdgeVertexExisting(edge, vertexA_i);
+		else
+			edge->edgeVertex[0] = new EdgeVertexNew(edge, vertexA);
+
+		if (this->targetMesh->IsValidVertex(vertexB_i))
+			edge->edgeVertex[1] = new EdgeVertexExisting(edge, vertexB_i);
+		else
+			edge->edgeVertex[1] = new EdgeVertexNew(edge, vertexB);
+	}
+
+	for (Point* point : pointArray)
+		delete point;
+
+	return edge;
 }
 
 void MeshGraph::Clear()
@@ -119,9 +186,9 @@ MeshGraph::EdgeVertex::EdgeVertex(Edge* edge)
 
 //--------------------------------- EdgeVertexExisting ---------------------------------
 
-MeshGraph::EdgeVertexExisting::EdgeVertexExisting(Edge* edge) : EdgeVertex(edge)
+MeshGraph::EdgeVertexExisting::EdgeVertexExisting(Edge* edge, int i) : EdgeVertex(edge)
 {
-	this->vertex_i = -1;
+	this->vertex_i = i;
 }
 
 /*virtual*/ MeshGraph::EdgeVertexExisting::~EdgeVertexExisting()
@@ -135,8 +202,9 @@ MeshGraph::EdgeVertexExisting::EdgeVertexExisting(Edge* edge) : EdgeVertex(edge)
 
 //--------------------------------- EdgeVertexNew ---------------------------------
 
-MeshGraph::EdgeVertexNew::EdgeVertexNew(Edge* edge) : EdgeVertex(edge)
+MeshGraph::EdgeVertexNew::EdgeVertexNew(Edge* edge, const Mesh::Vertex& vertex) : EdgeVertex(edge)
 {
+	this->vertex = vertex;
 }
 
 /*virtual*/ MeshGraph::EdgeVertexNew::~EdgeVertexNew()

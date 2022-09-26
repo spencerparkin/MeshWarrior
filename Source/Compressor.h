@@ -7,6 +7,8 @@
 
 namespace MeshWarrior
 {
+	// Regardless of the order of the given array, this should consistently compress if
+	// the given compression function is both associative and commutative.
 	template<typename Type>
 	void CompressArray(std::vector<Type*>& givenArray, std::function<Type*(const Type*, const Type*)> compressorFunc)
 	{

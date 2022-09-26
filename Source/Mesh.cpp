@@ -1,19 +1,24 @@
 #include "Mesh.h"
+#include "Polygon.h"
 #include <sstream>
 #include <set>
 
 using namespace MeshWarrior;
 
+//--------------------------------- Mesh ---------------------------------
+
 Mesh::Mesh()
 {
 	this->vertexArray = new std::vector<Vertex>();
 	this->faceArray = new std::vector<Face>();
+	this->index = nullptr;
 }
 
 /*virtual*/ Mesh::~Mesh()
 {
 	delete this->vertexArray;
 	delete this->faceArray;
+	delete this->index;
 }
 
 Mesh::Vertex* Mesh::GetVertex(int i)
@@ -103,30 +108,34 @@ bool Mesh::AddFace(const Face& face)
 	return true;
 }
 
-void Mesh::AddFace(const ConvexPolygon& convexPolygon, Index* index /* = nullptr*/, double eps /*= 1e-6*/)
+void Mesh::AddFace(const ConvexPolygon& convexPolygon, double eps /*= 1e-6*/)
 {
 	Face face;
 	for (const Vertex& vertex : convexPolygon.vertexArray)
-		face.vertexArray.push_back(this->FindOrCreateVertex(vertex, index));
+		face.vertexArray.push_back(this->FindOrCreateVertex(vertex));
 
 	this->faceArray->push_back(face);
 }
 
-int Mesh::FindOrCreateVertex(const Vertex& vertex, Index* index /*= nullptr*/, double eps /*= 1e-6*/)
+int Mesh::FindOrCreateVertex(const Vertex& vertex, bool canCreate /*= true*/, double eps /*= 1e-6*/)
 {
-	// It is up to the caller to make sure that the index is valid.
-	if (index)
-		return index->FindOrCreateVertex(vertex, this);
+	if (this->index && eps == 0.0)
+		return index->FindOrCreateVertex(vertex, this, canCreate);
 
-	for(int i = 0; i < (signed)this->vertexArray->size(); i++)
-	{
-		const Vertex& existingVertex = (*this->vertexArray)[i];
-		if ((existingVertex.point - vertex.point).Length() <= eps)
+	for (int i = 0; i < (int)this->vertexArray->size(); i++)
+		if (((*this->vertexArray)[i].point - vertex.point).Length() <= eps)
 			return i;
-	}
+
+	if (!canCreate)
+		return -1;
 
 	this->vertexArray->push_back(vertex);
 	return (int)this->vertexArray->size() - 1;
+}
+
+int Mesh::FindVertex(const Vertex& vertex, double eps /*= 1e-6*/) const
+{
+	return const_cast<Mesh*>(this)->FindOrCreateVertex(vertex, false, eps);
 }
 
 void Mesh::ToPolygonArray(std::vector<ConvexPolygon>& polygonArray) const
@@ -134,21 +143,13 @@ void Mesh::ToPolygonArray(std::vector<ConvexPolygon>& polygonArray) const
 	polygonArray.clear();
 	
 	for (const Face& face : *this->faceArray)
-	{
-		ConvexPolygon polygon;
-		for (int i : face.vertexArray)
-			polygon.vertexArray.push_back((*this->vertexArray)[i]);
-
-		polygonArray.push_back(polygon);
-	}
+		polygonArray.push_back(face.GeneratePolygon(this));
 }
 
 void Mesh::FromPolygonArray(const std::vector<ConvexPolygon>& polygonArray)
 {
-	Index* index = new Index();
-
 	for (const ConvexPolygon& polygon : polygonArray)
-		this->AddFace(polygon, index);
+		this->AddFace(polygon);
 
 	delete index;
 }
@@ -163,6 +164,56 @@ AxisAlignedBox Mesh::CalcBoundingBox() const
 	return boundingBox;
 }
 
+Mesh::ConvexPolygon Mesh::Face::GeneratePolygon(const Mesh* mesh) const
+{
+	ConvexPolygon polygon;
+
+	for (int i : this->vertexArray)
+		polygon.vertexArray.push_back((*mesh->vertexArray)[i]);
+
+	return polygon;
+}
+
+void Mesh::ConvexPolygon::ToBasicPolygon(MeshWarrior::ConvexPolygon& polygon) const
+{
+	polygon.vertexArray->clear();
+	for (const Mesh::Vertex& vertex : this->vertexArray)
+		polygon.vertexArray->push_back(vertex.point);
+}
+
+void Mesh::ConvexPolygon::FromBasicPolygon(const MeshWarrior::ConvexPolygon& polygon)
+{
+	Plane plane;
+	polygon.CalcPlane(plane);
+
+	this->vertexArray.clear();
+	for (const Vector& point : *polygon.vertexArray)
+	{
+		Mesh::Vertex vertex;
+		vertex.point = point;
+		vertex.normal = plane.unitNormal;
+		this->vertexArray.push_back(vertex);
+	}
+}
+
+/*static*/ Mesh* Mesh::GenerateConvexHull(const std::vector<Vector>& pointArray)
+{
+	// TODO: Write this.
+	return nullptr;
+}
+
+void Mesh::RebuildIndexIfNeeded()
+{
+	if (!this->index || !this->index->IsValid(this))
+	{
+		delete this->index;
+		this->index = new Index();
+		this->index->Rebuild(this);
+	}
+}
+
+//--------------------------------- Index ---------------------------------
+
 Mesh::Index::Index()
 {
 	this->vertexMap = new std::map<std::string, int>();
@@ -173,7 +224,7 @@ Mesh::Index::Index()
 	delete this->vertexMap;
 }
 
-int Mesh::Index::FindOrCreateVertex(const Vertex& vertex, Mesh* mesh)
+int Mesh::Index::FindOrCreateVertex(const Vertex& vertex, Mesh* mesh, bool canCreate)
 {
 	int i = -1;
 
@@ -181,7 +232,7 @@ int Mesh::Index::FindOrCreateVertex(const Vertex& vertex, Mesh* mesh)
 	std::map<std::string, int>::iterator iter = this->vertexMap->find(key);
 	if (iter != this->vertexMap->end())
 		i = iter->second;
-	else
+	else if (canCreate)
 	{
 		mesh->vertexArray->push_back(vertex);
 		i = (int)mesh->vertexArray->size() - 1;
@@ -197,6 +248,18 @@ std::string Mesh::Index::MakeKey(const Vertex& vertex) const
 	stringStream << vertex.point.x << "|" << vertex.point.y << "|" << vertex.point.z;
 	std::string key = stringStream.str();
 	return key;
+}
+
+void Mesh::Index::Rebuild(const Mesh* mesh)
+{
+	this->vertexMap->clear();
+
+	for (int i = 0; i < (int)mesh->vertexArray->size(); i++)
+	{
+		const Vertex& vertex = (*mesh->vertexArray)[i];
+		std::string key = this->MakeKey(vertex);
+		(*this->vertexMap)[key] = i;
+	}
 }
 
 bool Mesh::Index::IsValid(const Mesh* mesh) const

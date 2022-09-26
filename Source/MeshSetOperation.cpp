@@ -152,7 +152,7 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 			for (Face* faceA : newFaceSetA)
 			{
 				ConvexPolygon polygon;
-				faceA->ToBasicPolygon(polygon);
+				faceA->polygon.ToBasicPolygon(polygon);
 				if (!polygon.IsValid(1e-4))
 					continue;
 
@@ -163,7 +163,7 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 			for (Face* faceB : newFaceSetB)
 			{
 				ConvexPolygon polygon;
-				faceB->ToBasicPolygon(polygon);
+				faceB->polygon.ToBasicPolygon(polygon);
 				if (!polygon.IsValid(1e-4))
 					continue;
 
@@ -227,8 +227,8 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 	newFaceSetB.clear();
 
 	ConvexPolygon polygonA, polygonB;
-	pair.faceA->ToBasicPolygon(polygonA);
-	pair.faceB->ToBasicPolygon(polygonB);
+	pair.faceA->polygon.ToBasicPolygon(polygonA);
+	pair.faceB->polygon.ToBasicPolygon(polygonB);
 
 	// Do they actually intersect in a non-trivial way?
 	Shape* shape = polygonA.IntersectWith(&polygonB);
@@ -248,7 +248,7 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 		{
 			Face* face = this->faceHeap->Allocate();
 			face->family = Face::FAMILY_A;
-			face->FromBasicPolygon(newPolygonA);
+			face->polygon.FromBasicPolygon(newPolygonA);
 			newFaceSetA.insert(face);
 		}
 
@@ -256,7 +256,7 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 		{
 			Face* face = this->faceHeap->Allocate();
 			face->family = Face::FAMILY_B;
-			face->FromBasicPolygon(newPolygonB);
+			face->polygon.FromBasicPolygon(newPolygonB);
 			newFaceSetB.insert(face);
 		}
 	}
@@ -278,26 +278,4 @@ MeshSetOperation::Face::Face()
 		box.MinimallyExpandToContainPoint(this->polygon.vertexArray[i].point);
 
 	return box;
-}
-
-void MeshSetOperation::Face::ToBasicPolygon(Polygon& polygon) const
-{
-	polygon.vertexArray->clear();
-	for (const Mesh::Vertex& vertex : this->polygon.vertexArray)
-		polygon.vertexArray->push_back(vertex.point);
-}
-
-void MeshSetOperation::Face::FromBasicPolygon(const Polygon& polygon)
-{
-	Plane plane;
-	polygon.CalcPlane(plane);
-
-	this->polygon.vertexArray.clear();
-	for (const Vector& point : *polygon.vertexArray)
-	{
-		Mesh::Vertex vertex;
-		vertex.point = point;
-		vertex.normal = plane.unitNormal;
-		this->polygon.vertexArray.push_back(vertex);
-	}
 }

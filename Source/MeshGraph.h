@@ -60,7 +60,7 @@ namespace MeshWarrior
 		class EdgeVertexExisting : public EdgeVertex
 		{
 		public:
-			EdgeVertexExisting(Edge* edge);
+			EdgeVertexExisting(Edge* edge, int i);
 			virtual ~EdgeVertexExisting();
 
 			virtual const Mesh::Vertex* GetVertex(void) override;
@@ -71,7 +71,7 @@ namespace MeshWarrior
 		class EdgeVertexNew : public EdgeVertex
 		{
 		public:
-			EdgeVertexNew(Edge* edge);
+			EdgeVertexNew(Edge* edge, const Mesh::Vertex& vertex);
 			virtual ~EdgeVertexNew();
 
 			virtual const Mesh::Vertex* GetVertex(void) override;

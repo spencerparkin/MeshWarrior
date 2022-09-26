@@ -24,6 +24,7 @@ namespace MeshWarrior
 
 		virtual bool IsValid(double eps = 1e-5) const;
 		virtual void Tessellate(std::vector<ConvexPolygon>& polygonArray) const;
+		virtual double CalcArea() const;
 
 		void ReverseWinding();
 		bool CalcPlane(Plane& plane) const;
@@ -50,6 +51,7 @@ namespace MeshWarrior
 
 		virtual bool IsValid(double eps = 1e-5) const override;
 		virtual void Tessellate(std::vector<ConvexPolygon>& polygonArray) const override;
+		virtual double CalcArea() const override;
 
 		bool GenerateEdgePlaneArray(std::vector<Plane>& edgePlaneArray) const;
 		void AddMeshPolygon(std::vector<Mesh::ConvexPolygon>& polygonList, const Vector& color) const;

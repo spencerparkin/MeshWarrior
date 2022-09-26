@@ -9,6 +9,8 @@
 
 namespace MeshWarrior
 {
+	class ConvexPolygon;
+
 	class MESH_WARRIOR_API Mesh : public FileObject
 	{
 		friend class Index;
@@ -25,25 +27,7 @@ namespace MeshWarrior
 			Vector texCoords;
 		};
 
-		class Index
-		{
-		public:
-			Index();
-			virtual ~Index();
-
-			int FindOrCreateVertex(const Vertex& vertex, Mesh* mesh);
-
-			// Make sure that this index is still valid WRT to the given mesh.
-			// Note that this is not meant to be a fast operation, and should
-			// only be done once, if at all, before using the index.
-			bool IsValid(const Mesh* mesh) const;
-
-		private:
-
-			std::string MakeKey(const Vertex& vertex) const;
-
-			std::map<std::string, int>* vertexMap;
-		};
+		struct ConvexPolygon;
 
 		// It's assumed that each face consists of a set of coplanar
 		// vertices forming a convex polygon wound CCW when viewing
@@ -51,11 +35,17 @@ namespace MeshWarrior
 		struct Face
 		{
 			std::vector<int> vertexArray;
+
+			ConvexPolygon GeneratePolygon(const Mesh* mesh) const;
 		};
 
 		// The same assumption is made here as well.
 		struct ConvexPolygon
 		{
+			// Vertex color/texture information, etc., is lost here.
+			void ToBasicPolygon(MeshWarrior::ConvexPolygon& polygon) const;
+			void FromBasicPolygon(const MeshWarrior::ConvexPolygon& polygon);
+
 			std::vector<Vertex> vertexArray;
 		};
 
@@ -74,17 +64,42 @@ namespace MeshWarrior
 		void Clear();
 		int AddVertex(const Vertex& vertex);
 		bool AddFace(const Face& face);
-		void AddFace(const ConvexPolygon& convexPolygon, Index* index = nullptr, double eps = 1e-6);
-		int FindOrCreateVertex(const Vertex& vertex, Index* index = nullptr, double eps = 1e-6);
+		void AddFace(const ConvexPolygon& convexPolygon, double eps = 1e-6);
+		int FindOrCreateVertex(const Vertex& vertex, bool canCreate = true, double eps = 1e-6);
+		int FindVertex(const Vertex& vertex, double eps = 1e-6) const;
 
 		void ToPolygonArray(std::vector<ConvexPolygon>& polygonArray) const;
 		void FromPolygonArray(const std::vector<ConvexPolygon>& polygonArray);
 
 		AxisAlignedBox CalcBoundingBox() const;
 
+		static Mesh* GenerateConvexHull(const std::vector<Vector>& pointArray);
+
+		void RebuildIndexIfNeeded();
+
 	private:
 
 		std::vector<Vertex>* vertexArray;
 		std::vector<Face>* faceArray;
+
+		// TODO: Create an index based on a BSP tree.
+		class Index
+		{
+		public:
+			Index();
+			virtual ~Index();
+
+			int FindOrCreateVertex(const Vertex& vertex, Mesh* mesh, bool canCreate);
+			void Rebuild(const Mesh* mesh);
+			bool IsValid(const Mesh* mesh) const;
+
+		private:
+
+			std::string MakeKey(const Vertex& vertex) const;
+
+			std::map<std::string, int>* vertexMap;
+		};
+
+		Index* index;
 	};
 }
