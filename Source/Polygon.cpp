@@ -1,4 +1,5 @@
 #include "Polygon.h"
+#include "Compressor.h"
 
 using namespace MeshWarrior;
 
@@ -266,6 +267,17 @@ bool ConvexPolygon::GenerateEdgePlaneArray(std::vector<Plane>& edgePlaneArray) c
 			}
 		}
 
+		// Remove redundant points to see how many there really are.
+		// I suppose this algorithm is a bit overkill when we know there will never be more than 4 points in the array.
+		CompressArray<Point>(pointList, [](const Point* pointA, const Point* pointB) -> Point* {
+			if (pointA->ContainsPoint(pointB->center))
+			{
+				delete pointB;
+				return const_cast<Point*>(pointA);
+			}
+			return nullptr;
+		});
+
 		if (pointList.size() == 2)
 			intersection = new LineSegment(pointList[0]->center, pointList[1]->center);
 	
@@ -308,7 +320,8 @@ bool ConvexPolygon::SplitAgainstPlane(const Plane& plane, std::vector<ConvexPoly
 		Point* point = (Point*)plane.IntersectWith(&edge);
 		if (point)
 		{
-			pointArray.push_back(point->center);
+			if (!point->ContainsPoint(edge.GetPoint(0)) && !point->ContainsPoint(edge.GetPoint(1)))
+				pointArray.push_back(point->center);
 			delete point;
 		}
 	}

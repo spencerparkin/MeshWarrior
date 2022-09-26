@@ -192,6 +192,14 @@ LineSegment::LineSegment(const Vector& pointA, const Vector& pointB)
 	return (point - this->center).Length() <= this->radius + eps;
 }
 
+Vector LineSegment::GetPoint(int i) const
+{
+	if (i % 2 == 0)
+		return this->center - this->unitNormal * this->radius;
+	else
+		return this->center + this->unitNormal * this->radius;
+}
+
 //--------------------------------- Sphere ---------------------------------
 
 Sphere::Sphere()

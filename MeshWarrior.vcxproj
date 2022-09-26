@@ -154,6 +154,7 @@
     <ClInclude Include="Source\AlgebraicSurface.h" />
     <ClInclude Include="Source\AxisAlignedBox.h" />
     <ClInclude Include="Source\BoundingBoxTree.h" />
+    <ClInclude Include="Source\Compressor.h" />
     <ClInclude Include="Source\FileFormats\OBJFormat.h" />
     <ClInclude Include="Source\FileObject.h" />
     <ClInclude Include="Source\Polygon.h" />

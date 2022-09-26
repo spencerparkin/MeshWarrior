@@ -77,6 +77,8 @@ namespace MeshWarrior
 		virtual double ShortestSignedDistanceToPoint(const Vector& point) const override;
 		virtual bool ContainsPoint(const Vector& point, double eps = 1e-5) const override;
 
+		Vector GetPoint(int i) const;
+
 		double radius;
 	};
 

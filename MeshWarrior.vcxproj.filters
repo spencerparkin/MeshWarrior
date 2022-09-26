@@ -73,6 +73,9 @@
     <ClInclude Include="Source\TypeHeap.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Compressor.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Vector.cpp">
