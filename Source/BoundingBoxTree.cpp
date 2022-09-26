@@ -110,7 +110,7 @@ void BoundingBoxTree::Node::FindGuests(const AxisAlignedBox& box, std::list<Gues
 
 void BoundingBoxTree::Node::TallyGuests(int& tally) const
 {
-	tally += this->guestList.size();
+	tally += (int)this->guestList.size();
 
 	for (int i = 0; i < 2; i++)
 		if (this->node[i])

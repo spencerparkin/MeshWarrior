@@ -45,7 +45,7 @@ bool Mesh::IsValidVertex(int i) const
 
 int Mesh::GetNumVertices() const
 {
-	return this->vertexArray->size();
+	return (int)this->vertexArray->size();
 }
 
 Mesh::Face* Mesh::GetFace(int i)
@@ -77,7 +77,7 @@ bool Mesh::IsValidFace(int i) const
 
 int Mesh::GetNumFaces() const
 {
-	return this->faceArray->size();
+	return (int)this->faceArray->size();
 }
 
 void Mesh::Clear()
@@ -89,7 +89,7 @@ void Mesh::Clear()
 int Mesh::AddVertex(const Vertex& vertex)
 {
 	this->vertexArray->push_back(vertex);
-	return this->vertexArray->size() - 1;
+	return (int)this->vertexArray->size() - 1;
 }
 
 bool Mesh::AddFace(const Face& face)
@@ -126,7 +126,7 @@ int Mesh::FindOrCreateVertex(const Vertex& vertex, Index* index /*= nullptr*/, d
 	}
 
 	this->vertexArray->push_back(vertex);
-	return this->vertexArray->size() - 1;
+	return (int)this->vertexArray->size() - 1;
 }
 
 void Mesh::ToPolygonArray(std::vector<ConvexPolygon>& polygonArray) const
@@ -174,7 +174,7 @@ int Mesh::Index::FindOrCreateVertex(const Vertex& vertex, Mesh* mesh)
 	else
 	{
 		mesh->vertexArray->push_back(vertex);
-		i = mesh->vertexArray->size() - 1;
+		i = (int)mesh->vertexArray->size() - 1;
 		this->vertexMap->insert(std::pair<std::string, int>(key, i));
 	}
 

@@ -136,13 +136,13 @@ void OBJFormat::LookupAndAssign(const std::vector<Vector>& vectorArray, int i, V
 		if (i > 0)
 			i--;
 		else if (i < 0)
-			i = vectorArray.size() + i;
+			i = (int)vectorArray.size() + i;
 
 		// Clamp the offset to be in range.
 		if (i < 0)
 			i = 0;
 		else if (i >= (signed)vectorArray.size())
-			i = vectorArray.size() - 1;
+			i = (int)vectorArray.size() - 1;
 
 		result = vectorArray[i];
 	}

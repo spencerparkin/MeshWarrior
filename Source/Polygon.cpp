@@ -59,7 +59,7 @@ void Polygon::ReverseWinding()
 {
 	for (int i = 0; i < (signed)this->vertexArray->size() / 2; i++)
 	{
-		int j = this->vertexArray->size() - 1 - i;
+		int j = (int)this->vertexArray->size() - 1 - i;
 		Vector vertex = (*this->vertexArray)[i];
 		(*this->vertexArray)[i] = (*this->vertexArray)[j];
 		(*this->vertexArray)[j] = vertex;
