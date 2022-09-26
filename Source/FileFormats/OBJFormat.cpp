@@ -168,7 +168,6 @@ void OBJFormat::LookupAndAssign(const std::vector<Vector>& vectorArray, int i, V
 			this->DumpMesh(fileStream, mesh);
 	}
 
-	fileStream << "\n";
 	fileStream << "# Total vertices: " << this->totalVertices << "\n";
 	fileStream << "# Total faces:    " << this->totalFaces << "\n";
 
@@ -220,6 +219,8 @@ void OBJFormat::DumpMesh(std::ofstream& fileStream, const Mesh* mesh)
 			fileStream << "\n";
 		}
 	}
+
+	fileStream << "\n";
 
 	this->totalVertices += mesh->GetNumVertices();
 	this->totalFaces += mesh->GetNumFaces();

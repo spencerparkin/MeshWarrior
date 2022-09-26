@@ -196,9 +196,13 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 
 	// For debugging purposes, dump the refined meshes for examination.
 #if true
+	*refinedMeshA->name = "refined_mesh_A";
+	*refinedMeshB->name = "refined_mesh_B";
 	OBJFormat objFormat;
-	objFormat.SaveMesh("refined_mesh_A.obj", *refinedMeshA);
-	objFormat.SaveMesh("refined_mesh_B.obj", *refinedMeshB);
+	std::vector<FileObject*> fileObjectArray;
+	fileObjectArray.push_back(refinedMeshA);
+	fileObjectArray.push_back(refinedMeshB);
+	objFormat.Save("refined_meshes.obj", fileObjectArray);
 #endif
 
 	// TODO: Now create a mesh graph for the A faces and a mesh graph for the B faces.
@@ -225,15 +229,6 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 	ConvexPolygon polygonA, polygonB;
 	pair.faceA->ToBasicPolygon(polygonA);
 	pair.faceB->ToBasicPolygon(polygonB);
-
-#if false
-	Mesh debugMesh;
-	debugMesh.AddFace(pair.faceA->polygon);
-	debugMesh.AddFace(pair.faceB->polygon);
-
-	OBJFormat objFormat;
-	objFormat.SaveMesh("debug.obj", debugMesh);
-#endif
 
 	// Do they actually intersect in a non-trivial way?
 	Shape* shape = polygonA.IntersectWith(&polygonB);
