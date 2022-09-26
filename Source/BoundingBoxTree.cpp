@@ -47,6 +47,14 @@ int BoundingBoxTree::TotalGuests() const
 	return total;
 }
 
+void BoundingBoxTree::GatherAllGuests(std::list<Guest*>& givenGuestList) const
+{
+	givenGuestList.clear();
+
+	if (this->rootNode)
+		this->rootNode->GatherAllGuests(givenGuestList);
+}
+
 void BoundingBoxTree::Clear()
 {
 	delete this->rootNode;
@@ -115,4 +123,14 @@ void BoundingBoxTree::Node::TallyGuests(int& tally) const
 	for (int i = 0; i < 2; i++)
 		if (this->node[i])
 			this->node[i]->TallyGuests(tally);
+}
+
+void BoundingBoxTree::Node::GatherAllGuests(std::list<Guest*>& givenGuestList) const
+{
+	for (Guest* guest : this->guestList)
+		givenGuestList.push_back(guest);
+
+	for (int i = 0; i < 2; i++)
+		if (this->node[i])
+			this->node[i]->GatherAllGuests(givenGuestList);
 }

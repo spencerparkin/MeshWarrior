@@ -2,6 +2,7 @@
 
 #include "FileObject.h"
 #include "Vector.h"
+#include "AxisAlignedBox.h"
 #include <vector>
 #include <map>
 #include <string>
@@ -78,6 +79,8 @@ namespace MeshWarrior
 
 		void ToPolygonArray(std::vector<ConvexPolygon>& polygonArray) const;
 		void FromPolygonArray(const std::vector<ConvexPolygon>& polygonArray);
+
+		AxisAlignedBox CalcBoundingBox() const;
 
 	private:
 

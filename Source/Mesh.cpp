@@ -153,6 +153,16 @@ void Mesh::FromPolygonArray(const std::vector<ConvexPolygon>& polygonArray)
 	delete index;
 }
 
+AxisAlignedBox Mesh::CalcBoundingBox() const
+{
+	AxisAlignedBox boundingBox;
+	
+	for (int i = 0; i < (int)this->vertexArray->size(); i++)
+		boundingBox.MinimallyExpandToContainPoint((*this->vertexArray)[i].point);
+
+	return boundingBox;
+}
+
 Mesh::Index::Index()
 {
 	this->vertexMap = new std::map<std::string, int>();

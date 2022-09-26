@@ -129,5 +129,8 @@
     <ClCompile Include="Source\FileObject.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Source\MeshGraph.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -179,6 +179,7 @@
     <ClCompile Include="Source\BoundingBoxTree.cpp" />
     <ClCompile Include="Source\FileFormats\OBJFormat.cpp" />
     <ClCompile Include="Source\FileObject.cpp" />
+    <ClCompile Include="Source\MeshGraph.cpp" />
     <ClCompile Include="Source\Polygon.cpp" />
     <ClCompile Include="Source\Mesh.cpp" />
     <ClCompile Include="Source\FileFormat.cpp" />
