@@ -246,8 +246,20 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 	// Do the same for refined mesh B.
 	//
 
-	Graph::Node* outsideNodeA = nullptr;
-	Graph::Node* outsideNodeB = nullptr;
+	rootBox.ScaleAboutCenter(2.0);
+	Sphere sphere;
+	sphere.center = rootBox.CalcCenter();
+	sphere.radius = rootBox.CalcRadius();
+
+	Graph::Node* outsideNodeA = this->FindOutsideNode(&this->refinedMeshA, &sphere, nodeList);
+	Graph::Node* outsideNodeB = this->FindOutsideNode(&this->refinedMeshB, &sphere, nodeList);
+
+	if (!outsideNodeA && !outsideNodeB)
+		*this->error = "Failed to detect an initial outside polygon for mesh A or mesh B.";
+	else if (!outsideNodeA)
+		*this->error = "Failed to detect an initial outside polygon for mesh A.";
+	else if (!outsideNodeB)
+		*this->error = "Failed to detect an initial outside polygon for mesh B.";
 
 	//
 	// Finally, color the graphs.  That is, determine whether each node is inside or outside.
@@ -255,8 +267,91 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 	// boundary, we switch from outside to inside, or vise-versa.
 	//
 
-	this->ColorGraph(outsideNodeA);
-	this->ColorGraph(outsideNodeB);
+	if (outsideNodeA && outsideNodeB)
+	{
+		this->ColorGraph(outsideNodeA);
+		this->ColorGraph(outsideNodeB);
+	}
+}
+
+MeshSetOperation::Graph::Node* MeshSetOperation::FindOutsideNode(const Mesh* desiredTargetMesh, const Sphere* sphere, const std::list<Graph::Node*>& nodeList)
+{
+	Graph::Node* foundNode = nullptr;
+
+	// Plan to "touch" the node collection from several different perspectives.
+	std::list<Plane*> planeList;
+	for (double x = -2.0; x <= 2.0; x += 1.0)
+	{
+		for (double y = -2.0; y <= 2.0; y += 1.0)
+		{
+			for (double z = -2.0; z <= 2.0; z += 1.0)
+			{
+				Vector vector(x, y, z);
+				if (::fabs(vector.x) == 2.0 || ::fabs(vector.y) == 2.0 || ::fabs(vector.z) == 2.0)
+				{
+					vector.Normalize();
+					Plane* plane = new Plane(sphere->center + vector * sphere->radius, vector);
+					planeList.push_back(plane);
+				}
+			}
+		}
+	}
+
+	for (Plane* touchPlane : planeList)
+	{
+		// Find a node that "touches" the plane.
+		Graph::Node* closestNode = nullptr;
+		double smallestDistance = DBL_MAX;
+		for (Graph::Node* node : nodeList)
+		{
+			const Mesh* targetMesh = node->meshGraph->GetTargetMesh();
+			if (targetMesh != desiredTargetMesh)
+				continue;
+
+			ConvexPolygon polygon;
+			targetMesh->GetFace(node->polygon_i)->GeneratePolygon(targetMesh).ToBasicPolygon(polygon);
+			Vector center = polygon.CalcCenter();
+			double distance = ::fabs(touchPlane->ShortestSignedDistanceToPoint(center));
+			if (distance < smallestDistance)
+			{
+				smallestDistance = distance;
+				closestNode = node;
+			}
+		}
+
+		if (closestNode)
+		{
+			// Tentative declare that we've found the node we're looking for.
+			foundNode = closestNode;
+
+			// Does the plane of the node contain all other nodes on or behind it?
+			ConvexPolygon polygon;
+			const Mesh* targetMesh = closestNode->meshGraph->GetTargetMesh();
+			targetMesh->GetFace(closestNode->polygon_i)->GeneratePolygon(targetMesh).ToBasicPolygon(polygon);
+			Plane polygonPlane;
+			polygon.CalcPlane(polygonPlane);
+			for (Graph::Node* node : nodeList)
+			{
+				const Mesh* targetMesh = node->meshGraph->GetTargetMesh();
+				targetMesh->GetFace(node->polygon_i)->GeneratePolygon(targetMesh).ToBasicPolygon(polygon);
+				Vector center = polygon.CalcCenter();
+				double distance = polygonPlane.ShortestSignedDistanceToPoint(center);
+				if (distance > 0.0 && !polygonPlane.ContainsPoint(center))
+				{
+					foundNode = nullptr;
+					break;
+				}
+			}
+
+			if (foundNode)
+				break;
+		}
+	}
+
+	for (Plane* plane : planeList)
+		delete plane;
+
+	return foundNode;
 }
 
 void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<Face*>& newFaceSetA, std::set<Face*>& newFaceSetB)
@@ -322,12 +417,10 @@ void MeshSetOperation::ColorGraph(Graph::Node* rootNode)
 			Graph::Node* adjacentNode = (Graph::Node*)edge->GetOtherAdjacency(node);
 			if (adjacentNode->side == Graph::Node::UNKNOWN)
 			{
-				LineSegment edgeSegment(edge->GetVertex(0)->point, edge->GetVertex(1)->point);
+				bool cut0 = this->PointIsOnCutBoundary(edge->GetVertex(0)->point);
+				bool cut1 = this->PointIsOnCutBoundary(edge->GetVertex(1)->point);
 
-				// Does a point exist on both the edge and a cut-boundary line-segment?
-				bool found = false;
-				//...
-				if (found)
+				if (cut0 && cut1)
 					adjacentNode->side = node->OppositeSide();
 				else
 					adjacentNode->side = node->side;
@@ -336,6 +429,15 @@ void MeshSetOperation::ColorGraph(Graph::Node* rootNode)
 			}
 		}
 	}
+}
+
+bool MeshSetOperation::PointIsOnCutBoundary(const Vector& point) const
+{
+	for (int i = 0; i < (int)this->cutBoundaryArray->size(); i++)
+		if ((*this->cutBoundaryArray)[i]->ContainsPoint(point))
+			return true;
+
+	return false;
 }
 
 MeshSetOperation::Face::Face()

@@ -93,6 +93,12 @@ namespace MeshWarrior
 			EdgeVertex* edgeVertex[2];
 		};
 
+		bool ForAllElements(std::function<bool(GraphElement*)> iterationFunc);
+
+		const Mesh* GetTargetMesh() const { return this->targetMesh; }
+
+	private:
+
 		class Face : public BoundingBoxTree::Guest
 		{
 		public:
@@ -104,9 +110,6 @@ namespace MeshWarrior
 			Node* node;
 		};
 
-		bool ForAllElements(std::function<bool(GraphElement*)> iterationFunc);
-
-	private:
 		Edge* FindCommonEdge(Node* nodeA, Node* nodeB);
 
 		std::vector<GraphElement*>* graphElementArray;

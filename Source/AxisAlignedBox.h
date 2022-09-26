@@ -39,6 +39,7 @@ namespace MeshWarrior
 		double CalcHeight() const;
 		double CalcDepth() const;
 		double CalcVolume() const;
+		double CalcRadius() const;
 
 		Vector min, max;
 	};

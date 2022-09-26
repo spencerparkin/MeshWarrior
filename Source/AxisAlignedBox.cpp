@@ -126,6 +126,11 @@ double AxisAlignedBox::CalcVolume() const
 	return this->CalcWidth() * this->CalcHeight() * this->CalcDepth();
 }
 
+double AxisAlignedBox::CalcRadius() const
+{
+	return (this->max - this->CalcCenter()).Length();
+}
+
 void AxisAlignedBox::MinimallyExpandToContainPoint(const Vector& point)
 {
 	if (this->min.x == FLT_MIN && this->min.y == FLT_MIN &&

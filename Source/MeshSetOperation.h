@@ -11,6 +11,7 @@
 namespace MeshWarrior
 {
 	class LineSegment;
+	class Sphere;
 
 	// Note that the algorithm used here won't work with surfaces
 	// of certain topologies (e.g., non-orientable surfaces.)  This
@@ -84,6 +85,8 @@ namespace MeshWarrior
 		void ProcessMeshes(const Mesh* meshA, const Mesh* meshB);
 		void ProcessCollisionPair(const CollisionPair& pair, std::set<Face*>& newFaceSetA, std::set<Face*>& newFaceSetB);
 		void ColorGraph(Graph::Node* rootNode);
+		bool PointIsOnCutBoundary(const Vector& point) const;
+		Graph::Node* FindOutsideNode(const Mesh* desiredTargetMesh, const Sphere* sphere, const std::list<Graph::Node*>& nodeList);
 
 		std::set<Face*>* faceSet;
 		TypeHeap<Face>* faceHeap;
