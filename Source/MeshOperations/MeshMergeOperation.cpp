@@ -11,23 +11,17 @@ MeshMergeOperation::MeshMergeOperation()
 {
 }
 
-/*virtual*/ Mesh* MeshMergeOperation::Calculate(const Mesh* meshA, const Mesh* meshB)
+/*virtual*/ bool MeshMergeOperation::Calculate(const std::vector<Mesh*>& inputMeshArray, std::vector<Mesh*>& outputMeshArray)
 {
-	std::vector<Mesh::ConvexPolygon> polygonArrayA, polygonArrayB;
-
-	meshA->ToPolygonArray(polygonArrayA);
-	meshB->ToPolygonArray(polygonArrayB);
-
-	std::vector<Mesh::ConvexPolygon> mergedPolygonArray;
-
-	for (Mesh::ConvexPolygon& polygon : polygonArrayA)
-		mergedPolygonArray.push_back(polygon);
-
-	for (Mesh::ConvexPolygon& polygon : polygonArrayB)
-		mergedPolygonArray.push_back(polygon);
+	std::vector<Mesh::ConvexPolygon> polygonArray;
+	for (const Mesh* inputMesh : inputMeshArray)
+		inputMesh->ToPolygonArray(polygonArray, true);
 
 	Mesh* mergedMesh = new Mesh();
-	mergedMesh->FromPolygonArray(mergedPolygonArray);
+	for (Mesh::ConvexPolygon& polygon : polygonArray)
+		mergedMesh->AddFace(polygon);	// This will be slow unless we have a good index mechanism in the mesh data-structure.
 
-	return mergedMesh;
+	outputMeshArray.clear();
+	outputMeshArray.push_back(mergedMesh);
+	return true;
 }

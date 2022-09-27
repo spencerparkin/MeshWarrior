@@ -1,6 +1,6 @@
 #include "MeshSetOperation.h"
-#include "Mesh.h"
-#include "Polyline.h"
+#include "../Mesh.h"
+#include "../Polyline.h"
 #if MW_DEBUG_DUMP_REFINED_MESHES || MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES
 #	include "FileFormats/OBJFormat.h"
 #endif
@@ -9,8 +9,9 @@
 
 using namespace MeshWarrior;
 
-MeshSetOperation::MeshSetOperation()
+MeshSetOperation::MeshSetOperation(int flags)
 {
+	this->flags = flags;
 	this->faceSet = new std::set<Face*>();
 	this->faceHeap = new StackHeap<Face>(1024);	// TODO: Use regular heap in release?
 	this->cutBoundarySegmentArray = new std::vector<LineSegment*>();
@@ -40,9 +41,28 @@ MeshSetOperation::MeshSetOperation()
 	this->graphB;
 }
 
-void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
+/*virtual*/ bool MeshSetOperation::Calculate(const std::vector<Mesh*>& inputMeshArray, std::vector<Mesh*>& outputMeshArray)
 {
 	*this->error = "";
+
+	//
+	// Make sure we were given the right number of arguments, and given some flags.
+	//
+
+	if (inputMeshArray.size() != 2)
+	{
+		*this->error = "The mesh set operation needs exactly two meshes as input.";
+		return false;
+	}
+
+	if (this->flags == 0)
+	{
+		*this->error = "No flags given for mesh set operation.";
+		return false;
+	}
+
+	const Mesh* meshA = inputMeshArray[0];
+	const Mesh* meshB = inputMeshArray[1];
 
 	//
 	// Throw all the polygons from each mesh into a single set.
@@ -202,7 +222,7 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 	if (this->cutBoundarySegmentArray->size() == 0)
 	{
 		*this->error = "No cut boundary was produced.  Cannot continue.";
-		return;
+		return false;
 	}
 
 	//
@@ -292,20 +312,103 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 	else if (!outsideNodeB)
 		*this->error = "Failed to detect an initial outside polygon for mesh B.";
 
+	if (this->error->length() > 0)
+		return false;
+
 	//
 	// Finally, color the graphs.  That is, determine whether each node is inside or outside.
 	// We do this with a BFS starting from a known outside node.  Whenever we cross a cut
 	// boundary, we switch from outside to inside, or vise-versa.
 	//
 
-	if (outsideNodeA && outsideNodeB)
-	{
-		outsideNodeA->side = Graph::Node::OUTSIDE;
-		outsideNodeB->side = Graph::Node::OUTSIDE;
+	outsideNodeA->side = Graph::Node::OUTSIDE;
+	outsideNodeB->side = Graph::Node::OUTSIDE;
 
-		this->ColorGraph(outsideNodeA);
-		this->ColorGraph(outsideNodeB);
+	this->ColorGraph(outsideNodeA);
+	this->ColorGraph(outsideNodeB);
+	
+	//
+	// Bucket sort the polygons.
+	//
+
+	std::vector<Mesh::ConvexPolygon> outsidePolygonArrayA, outsidePolygonArrayB;
+	std::vector<Mesh::ConvexPolygon> insidePolygonArrayA, insidePolygonArrayB;
+
+	this->graphA->ForAllElements([&outsidePolygonArrayA, &insidePolygonArrayA](MeshGraph::GraphElement* element) -> bool {
+		Graph::Node* node = dynamic_cast<Graph::Node*>(element);
+		if (node)
+		{
+			if (node->side == Graph::Node::OUTSIDE)
+				outsidePolygonArrayA.push_back(node->MakePolygon());
+			else if (node->side == Graph::Node::INSIDE)
+				insidePolygonArrayA.push_back(node->MakePolygon().ReverseWinding());
+		}
+		return false;
+	});
+
+	this->graphB->ForAllElements([&outsidePolygonArrayB, &insidePolygonArrayB](MeshGraph::GraphElement* element) -> bool {
+		Graph::Node* node = dynamic_cast<Graph::Node*>(element);
+		if (node)
+		{
+			if (node->side == Graph::Node::OUTSIDE)
+				outsidePolygonArrayB.push_back(node->MakePolygon());
+			else if (node->side == Graph::Node::INSIDE)
+				insidePolygonArrayB.push_back(node->MakePolygon().ReverseWinding());
+		}
+		return false;
+	});
+
+	//
+	// Lastly, form the results called-for by the given flags.
+	//
+
+	outputMeshArray.clear();
+
+	if ((this->flags & MW_FLAG_UNION_SET_OP) != 0)
+	{
+		Mesh* mesh = new Mesh();
+		*mesh->name = "union";
+		for (Mesh::ConvexPolygon& polygon : outsidePolygonArrayA)
+			mesh->AddFace(polygon);
+		for (Mesh::ConvexPolygon& polygon : outsidePolygonArrayB)
+			mesh->AddFace(polygon);
+		outputMeshArray.push_back(mesh);
 	}
+
+	if ((this->flags & MW_FLAG_INTERSECTION_SETP_OP) != 0)
+	{
+		Mesh* mesh = new Mesh();
+		*mesh->name = "intersection";
+		for (Mesh::ConvexPolygon& polygon : insidePolygonArrayA)
+			mesh->AddFace(polygon);
+		for (Mesh::ConvexPolygon& polygon : insidePolygonArrayB)
+			mesh->AddFace(polygon);
+		outputMeshArray.push_back(mesh);
+	}
+
+	if ((this->flags & MW_FLAG_A_MINUS_B_SET_OP) != 0)
+	{
+		Mesh* mesh = new Mesh();
+		*mesh->name = "a_minus_b";
+		for (Mesh::ConvexPolygon& polygon : outsidePolygonArrayA)
+			mesh->AddFace(polygon);
+		for (Mesh::ConvexPolygon& polygon : insidePolygonArrayB)
+			mesh->AddFace(polygon);
+		outputMeshArray.push_back(mesh);
+	}
+
+	if ((this->flags & MW_FLAG_B_MINUS_A_SET_OP) != 0)
+	{
+		Mesh* mesh = new Mesh();
+		*mesh->name = "b_minus_a";
+		for (Mesh::ConvexPolygon& polygon : outsidePolygonArrayB)
+			mesh->AddFace(polygon);
+		for (Mesh::ConvexPolygon& polygon : insidePolygonArrayA)
+			mesh->AddFace(polygon);
+		outputMeshArray.push_back(mesh);
+	}
+
+	return true;
 }
 
 MeshSetOperation::Graph::Node* MeshSetOperation::FindOutsideNode(const Mesh* desiredTargetMesh, const Sphere* sphere, const std::list<Graph::Node*>& nodeList)

@@ -1,9 +1,8 @@
 #include "FileFormats/OBJFormat.h"
-#include "MeshOperations/MeshUnionOperation.h"
-#include "MeshOperations/MeshIntersectionOperation.h"
-#include "MeshOperations/MeshDifferenceOperation.h"
+#include "MeshOperations/MeshSetOperation.h"
 #include "MeshOperations/MeshMergeOperation.h"
 #include "Mesh.h"
+#include <iostream>
 
 int main()
 {
@@ -14,20 +13,36 @@ int main()
 	Mesh* meshA = objFormat.LoadMesh("Sphere.OBJ");
 	Mesh* meshB = objFormat.LoadMesh("Box.OBJ");
 
+	int flags = MW_FLAG_UNION_SET_OP | MW_FLAG_INTERSECTION_SETP_OP | MW_FLAG_A_MINUS_B_SET_OP | MW_FLAG_B_MINUS_A_SET_OP;
+
 	Mesh* meshResult = nullptr;
-	MeshOperation* meshOp = new MeshIntersectionOperation();
+	MeshOperation* meshOp = new MeshSetOperation(flags);
 
-	if (meshA && meshB)
-		meshResult = meshOp->Calculate(meshA, meshB);
+	std::vector<Mesh*> inputMeshArray;
+	inputMeshArray.push_back(meshA);
+	inputMeshArray.push_back(meshB);
 
-	delete meshA;
-	delete meshB;
+	std::vector<Mesh*> outputMeshArray;
 
-	if (meshResult)
+	if (!meshOp->Calculate(inputMeshArray, outputMeshArray))
 	{
-		objFormat.SaveMesh("Result.OBJ", *meshResult);
-		delete meshResult;
+		std::cerr << "Mesh calculation failed!" << std::endl;
+		std::cerr << meshOp->error->c_str() << std::endl;
 	}
+	else
+	{
+		std::vector<FileObject*> fileObjectArray;
+		for (Mesh* mesh : outputMeshArray)
+			fileObjectArray.push_back(mesh);
+
+		objFormat.Save("Result.OBJ", fileObjectArray);
+	}
+
+	for (Mesh* mesh : inputMeshArray)
+		delete mesh;
+
+	for (Mesh* mesh : outputMeshArray)
+		delete mesh;
 
 	delete meshOp;
 

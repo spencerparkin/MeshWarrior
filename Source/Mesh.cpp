@@ -138,9 +138,10 @@ int Mesh::FindVertex(const Vertex& vertex, double eps /*= 1e-6*/) const
 	return const_cast<Mesh*>(this)->FindOrCreateVertex(vertex, false, eps);
 }
 
-void Mesh::ToPolygonArray(std::vector<ConvexPolygon>& polygonArray) const
+void Mesh::ToPolygonArray(std::vector<ConvexPolygon>& polygonArray, bool appendOnly /*= false*/) const
 {
-	polygonArray.clear();
+	if (!appendOnly)
+		polygonArray.clear();
 	
 	for (const Face& face : *this->faceArray)
 		polygonArray.push_back(face.GeneratePolygon(this));

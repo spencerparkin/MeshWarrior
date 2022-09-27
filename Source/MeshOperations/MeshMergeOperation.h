@@ -10,6 +10,6 @@ namespace MeshWarrior
 		MeshMergeOperation();
 		virtual ~MeshMergeOperation();
 
-		virtual Mesh* Calculate(const Mesh* meshA, const Mesh* meshB) override;
+		virtual bool Calculate(const std::vector<Mesh*>& inputMeshArray, std::vector<Mesh*>& outputMeshArray) override;
 	};
 }

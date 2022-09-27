@@ -72,7 +72,7 @@ namespace MeshWarrior
 		int FindOrCreateVertex(const Vertex& vertex, bool canCreate = true, double eps = 1e-6);
 		int FindVertex(const Vertex& vertex, double eps = 1e-6) const;
 
-		void ToPolygonArray(std::vector<ConvexPolygon>& polygonArray) const;
+		void ToPolygonArray(std::vector<ConvexPolygon>& polygonArray, bool appendOnly = false) const;
 		void FromPolygonArray(const std::vector<ConvexPolygon>& polygonArray);
 
 		AxisAlignedBox CalcBoundingBox() const;

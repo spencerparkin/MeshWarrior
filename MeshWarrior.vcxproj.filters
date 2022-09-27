@@ -31,18 +31,6 @@
     <ClInclude Include="Source\MeshOperation.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Source\MeshSetOperation.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\MeshOperations\MeshUnionOperation.h">
-      <Filter>Source\MeshOperations</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\MeshOperations\MeshIntersectionOperation.h">
-      <Filter>Source\MeshOperations</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\MeshOperations\MeshDifferenceOperation.h">
-      <Filter>Source\MeshOperations</Filter>
-    </ClInclude>
     <ClInclude Include="Source\AxisAlignedBox.h">
       <Filter>Source</Filter>
     </ClInclude>
@@ -79,6 +67,9 @@
     <ClInclude Include="Source\Polyline.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="Source\MeshOperations\MeshSetOperation.h">
+      <Filter>Source\MeshOperations</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Vector.cpp">
@@ -95,18 +86,6 @@
     </ClCompile>
     <ClCompile Include="Source\MeshOperation.cpp">
       <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\MeshSetOperation.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\MeshOperations\MeshUnionOperation.cpp">
-      <Filter>Source\MeshOperations</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\MeshOperations\MeshIntersectionOperation.cpp">
-      <Filter>Source\MeshOperations</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\MeshOperations\MeshDifferenceOperation.cpp">
-      <Filter>Source\MeshOperations</Filter>
     </ClCompile>
     <ClCompile Include="Source\AxisAlignedBox.cpp">
       <Filter>Source</Filter>
@@ -137,6 +116,9 @@
     </ClCompile>
     <ClCompile Include="Source\Polyline.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\MeshOperations\MeshSetOperation.cpp">
+      <Filter>Source\MeshOperations</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

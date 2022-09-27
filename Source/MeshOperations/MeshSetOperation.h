@@ -1,17 +1,22 @@
 #pragma once
 
-#include "MeshOperation.h"
-#include "BoundingBoxTree.h"
-#include "Mesh.h"
-#include "Polygon.h"
-#include "Polyline.h"
-#include "TypeHeap.h"
-#include "MeshGraph.h"
+#include "../MeshOperation.h"
+#include "../BoundingBoxTree.h"
+#include "../Mesh.h"
+#include "../Polygon.h"
+#include "../Polyline.h"
+#include "../TypeHeap.h"
+#include "../MeshGraph.h"
 #include <set>
 
 #define MW_DEBUG_DUMP_REFINED_MESHES			0
 #define MW_DEBUG_DUMP_CUT_BOUNDARY				0
 #define MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES		0
+
+#define MW_FLAG_UNION_SET_OP				0x00000001
+#define MW_FLAG_INTERSECTION_SETP_OP		0x00000002
+#define MW_FLAG_A_MINUS_B_SET_OP			0x00000004
+#define MW_FLAG_B_MINUS_A_SET_OP			0x00000008
 
 namespace MeshWarrior
 {
@@ -25,10 +30,14 @@ namespace MeshWarrior
 	class MESH_WARRIOR_API MeshSetOperation : public MeshOperation
 	{
 	public:
-		MeshSetOperation();
+		MeshSetOperation(int flags);
 		virtual ~MeshSetOperation();
 
 	protected:
+
+		int flags;
+
+		virtual bool Calculate(const std::vector<Mesh*>& inputMeshArray, std::vector<Mesh*>& outputMeshArray) override;
 
 		class Face : public BoundingBoxTree::Guest
 		{
