@@ -157,6 +157,7 @@
     <ClInclude Include="Source\Compressor.h" />
     <ClInclude Include="Source\FileFormats\OBJFormat.h" />
     <ClInclude Include="Source\FileObject.h" />
+    <ClInclude Include="Source\Matrix3x3.h" />
     <ClInclude Include="Source\MeshOperations\MeshSetOperation.h" />
     <ClInclude Include="Source\Polygon.h" />
     <ClInclude Include="Source\Defines.h" />
@@ -167,6 +168,7 @@
     <ClInclude Include="Source\MeshOperations\MeshMergeOperation.h" />
     <ClInclude Include="Source\MeshTopology.h" />
     <ClInclude Include="Source\Polyline.h" />
+    <ClInclude Include="Source\Quaternion.h" />
     <ClInclude Include="Source\Shape.h" />
     <ClInclude Include="Source\TypeHeap.h" />
     <ClInclude Include="Source\Vector.h" />
@@ -177,6 +179,7 @@
     <ClCompile Include="Source\BoundingBoxTree.cpp" />
     <ClCompile Include="Source\FileFormats\OBJFormat.cpp" />
     <ClCompile Include="Source\FileObject.cpp" />
+    <ClCompile Include="Source\Matrix3x3.cpp" />
     <ClCompile Include="Source\MeshGraph.cpp" />
     <ClCompile Include="Source\MeshOperations\MeshSetOperation.cpp" />
     <ClCompile Include="Source\Polygon.cpp" />
@@ -186,6 +189,7 @@
     <ClCompile Include="Source\MeshOperations\MeshMergeOperation.cpp" />
     <ClCompile Include="Source\MeshTopology.cpp" />
     <ClCompile Include="Source\Polyline.cpp" />
+    <ClCompile Include="Source\Quaternion.cpp" />
     <ClCompile Include="Source\Shape.cpp" />
     <ClCompile Include="Source\Vector.cpp" />
   </ItemGroup>

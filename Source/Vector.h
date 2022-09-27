@@ -24,7 +24,7 @@ namespace MeshWarrior
 		Vector& Divide(const Vector& vector, double scalar);
 		Vector& Project(const Vector& vectorA, const Vector& vectorB);
 		Vector& Reject(const Vector& vectorA, const Vector& vectorB);
-		Vector& Rotate(const Vector& vector, const Vector& unitLengthAxis, float angleRadians);
+		Vector& Rotate(const Vector& vector, const Vector& unitLengthAxis, double angleRadians);
 		Vector& Min(const Vector& vectorA, const Vector& vectorB);
 		Vector& Max(const Vector& vectorA, const Vector& vectorB);
 

@@ -70,6 +70,12 @@
     <ClInclude Include="Source\MeshOperations\MeshSetOperation.h">
       <Filter>Source\MeshOperations</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Matrix3x3.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Quaternion.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Vector.cpp">
@@ -119,6 +125,12 @@
     </ClCompile>
     <ClCompile Include="Source\MeshOperations\MeshSetOperation.cpp">
       <Filter>Source\MeshOperations</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Matrix3x3.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Quaternion.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -131,7 +131,7 @@ Vector& Vector::Reject(const Vector& vectorA, const Vector& vectorB)
 	return *this;
 }
 
-Vector& Vector::Rotate(const Vector& vector, const Vector& unitLengthAxis, float angleRadians)
+Vector& Vector::Rotate(const Vector& vector, const Vector& unitLengthAxis, double angleRadians)
 {
 	Vector xAxis, yAxis;
 	double radius;

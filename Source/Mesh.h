@@ -11,6 +11,7 @@ namespace MeshWarrior
 {
 	class ConvexPolygon;
 
+	// TODO: There should be a way to transform meshes and a way to fixup/calculate normals and UV coordinates.
 	class MESH_WARRIOR_API Mesh : public FileObject
 	{
 		friend class Index;
