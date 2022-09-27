@@ -33,7 +33,7 @@ void MeshGraph::Generate(const Mesh* mesh)
 	{
 		Node* node = this->NodeFactory();
 		this->graphElementArray->push_back(node);
-		node->polygon_i = i;
+		node->polygon = i;
 		tree.AddGuest(new Face(node));
 	}
 
@@ -75,8 +75,8 @@ MeshGraph::Edge* MeshGraph::FindCommonEdge(Node* nodeA, Node* nodeB)
 {
 	Edge* edge = nullptr;
 
-	const Mesh::Face* faceA = this->targetMesh->GetFace(nodeA->polygon_i);
-	const Mesh::Face* faceB = this->targetMesh->GetFace(nodeB->polygon_i);
+	const Mesh::Face* faceA = this->targetMesh->GetFace(nodeA->polygon);
+	const Mesh::Face* faceB = this->targetMesh->GetFace(nodeB->polygon);
 
 	ConvexPolygon polygon[2];
 
@@ -119,18 +119,8 @@ MeshGraph::Edge* MeshGraph::FindCommonEdge(Node* nodeA, Node* nodeB)
 		vertexA.point = pointArray[0]->center;
 		vertexB.point = pointArray[1]->center;
 
-		int vertexA_i = this->targetMesh->FindVertex(vertexA);
-		int vertexB_i = this->targetMesh->FindVertex(vertexB);
-
-		if (this->targetMesh->IsValidVertex(vertexA_i))
-			edge->edgeVertex[0] = new EdgeVertexExisting(edge, vertexA_i);
-		else
-			edge->edgeVertex[0] = new EdgeVertexNew(edge, vertexA);
-
-		if (this->targetMesh->IsValidVertex(vertexB_i))
-			edge->edgeVertex[1] = new EdgeVertexExisting(edge, vertexB_i);
-		else
-			edge->edgeVertex[1] = new EdgeVertexNew(edge, vertexB);
+		edge->vertex[0] = this->targetMesh->FindVertex(vertexA);
+		edge->vertex[1] = this->targetMesh->FindVertex(vertexB);
 	}
 
 	for (Point* point : pointArray)
@@ -181,7 +171,7 @@ MeshGraph::GraphElement::GraphElement(MeshGraph* meshGraph)
 
 MeshGraph::Node::Node(MeshGraph* meshGraph) : GraphElement(meshGraph)
 {
-	this->polygon_i = -1;
+	this->polygon = -1;
 }
 
 /*virtual*/ MeshGraph::Node::~Node()
@@ -197,49 +187,6 @@ bool MeshGraph::Node::LinkedWith(const Node* node) const
 	return false;
 }
 
-//--------------------------------- EdgeVertex ---------------------------------
-
-MeshGraph::EdgeVertex::EdgeVertex(Edge* edge)
-{
-	this->edge = edge;
-}
-
-/*virtual*/ MeshGraph::EdgeVertex::~EdgeVertex()
-{
-}
-
-//--------------------------------- EdgeVertexExisting ---------------------------------
-
-MeshGraph::EdgeVertexExisting::EdgeVertexExisting(Edge* edge, int i) : EdgeVertex(edge)
-{
-	this->vertex_i = i;
-}
-
-/*virtual*/ MeshGraph::EdgeVertexExisting::~EdgeVertexExisting()
-{
-}
-
-/*virtual*/ const Mesh::Vertex* MeshGraph::EdgeVertexExisting::GetVertex(void)
-{
-	return this->edge->meshGraph->targetMesh->GetVertex(this->vertex_i);
-}
-
-//--------------------------------- EdgeVertexNew ---------------------------------
-
-MeshGraph::EdgeVertexNew::EdgeVertexNew(Edge* edge, const Mesh::Vertex& vertex) : EdgeVertex(edge)
-{
-	this->vertex = vertex;
-}
-
-/*virtual*/ MeshGraph::EdgeVertexNew::~EdgeVertexNew()
-{
-}
-
-/*virtual*/ const Mesh::Vertex* MeshGraph::EdgeVertexNew::GetVertex(void)
-{
-	return &this->vertex;
-}
-
 //--------------------------------- Edge ---------------------------------
 
 MeshGraph::Edge::Edge(MeshGraph* meshGraph) : GraphElement(meshGraph)
@@ -247,19 +194,17 @@ MeshGraph::Edge::Edge(MeshGraph* meshGraph) : GraphElement(meshGraph)
 	this->adjacentNode[0] = nullptr;
 	this->adjacentNode[1] = nullptr;
 
-	this->edgeVertex[0] = nullptr;
-	this->edgeVertex[1] = nullptr;
+	this->vertex[0] = -1;
+	this->vertex[1] = -1;
 }
 
 /*virtual*/ MeshGraph::Edge::~Edge()
 {
-	delete this->edgeVertex[0];
-	delete this->edgeVertex[1];
 }
 
 const Mesh::Vertex* MeshGraph::Edge::GetVertex(int i)
 {
-	return this->edgeVertex[i % 2]->GetVertex();
+	return this->meshGraph->targetMesh->GetVertex(this->vertex[i % 2]);
 }
 
 MeshGraph::Node* MeshGraph::Edge::GetOtherAdjacency(Node* adjacency)
@@ -292,7 +237,7 @@ MeshGraph::Face::Face(Node* node)
 {
 	AxisAlignedBox box;
 	
-	const Mesh::Face* face = this->node->meshGraph->targetMesh->GetFace(this->node->polygon_i);
+	const Mesh::Face* face = this->node->meshGraph->targetMesh->GetFace(this->node->polygon);
 	assert(face);
 	Mesh::ConvexPolygon polygon = face->GeneratePolygon(this->node->meshGraph->targetMesh);
 	for (int i = 0; i < (int)polygon.vertexArray.size(); i++)

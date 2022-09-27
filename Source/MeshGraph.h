@@ -46,40 +46,7 @@ namespace MeshWarrior
 			bool LinkedWith(const Node* node) const;
 
 			std::vector<Edge*> edgeArray;
-			int polygon_i;
-		};
-
-		class EdgeVertex
-		{
-		public:
-			EdgeVertex(Edge* edge);
-			virtual ~EdgeVertex();
-
-			virtual const Mesh::Vertex* GetVertex(void) = 0;
-
-			Edge* edge;
-		};
-
-		class EdgeVertexExisting : public EdgeVertex
-		{
-		public:
-			EdgeVertexExisting(Edge* edge, int i);
-			virtual ~EdgeVertexExisting();
-
-			virtual const Mesh::Vertex* GetVertex(void) override;
-
-			int vertex_i;
-		};
-
-		class EdgeVertexNew : public EdgeVertex
-		{
-		public:
-			EdgeVertexNew(Edge* edge, const Mesh::Vertex& vertex);
-			virtual ~EdgeVertexNew();
-
-			virtual const Mesh::Vertex* GetVertex(void) override;
-
-			Mesh::Vertex vertex;
+			int polygon;
 		};
 
 		class Edge : public GraphElement
@@ -93,7 +60,7 @@ namespace MeshWarrior
 			const Node* GetOtherAdjacency(const Node* adjacency) const;
 
 			Node* adjacentNode[2];
-			EdgeVertex* edgeVertex[2];
+			int vertex[2];
 		};
 
 		bool ForAllElements(std::function<bool(GraphElement*)> iterationFunc);

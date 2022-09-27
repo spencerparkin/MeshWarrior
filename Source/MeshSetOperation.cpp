@@ -326,7 +326,7 @@ MeshSetOperation::Graph::Node* MeshSetOperation::FindOutsideNode(const Mesh* des
 				continue;
 
 			ConvexPolygon polygon;
-			targetMesh->GetFace(node->polygon_i)->GeneratePolygon(targetMesh).ToBasicPolygon(polygon);
+			targetMesh->GetFace(node->polygon)->GeneratePolygon(targetMesh).ToBasicPolygon(polygon);
 			Vector center = polygon.CalcCenter();
 			double distance = ::fabs(touchPlane->ShortestSignedDistanceToPoint(center));
 			if (distance < smallestDistance)
@@ -344,13 +344,13 @@ MeshSetOperation::Graph::Node* MeshSetOperation::FindOutsideNode(const Mesh* des
 			// Does the plane of the node contain all other nodes on or behind it?
 			ConvexPolygon polygon;
 			const Mesh* targetMesh = closestNode->meshGraph->GetTargetMesh();
-			targetMesh->GetFace(closestNode->polygon_i)->GeneratePolygon(targetMesh).ToBasicPolygon(polygon);
+			targetMesh->GetFace(closestNode->polygon)->GeneratePolygon(targetMesh).ToBasicPolygon(polygon);
 			Plane polygonPlane;
 			polygon.CalcPlane(polygonPlane);
 			for (Graph::Node* node : nodeList)
 			{
 				const Mesh* targetMesh = node->meshGraph->GetTargetMesh();
-				targetMesh->GetFace(node->polygon_i)->GeneratePolygon(targetMesh).ToBasicPolygon(polygon);
+				targetMesh->GetFace(node->polygon)->GeneratePolygon(targetMesh).ToBasicPolygon(polygon);
 				Vector center = polygon.CalcCenter();
 				double distance = polygonPlane.ShortestSignedDistanceToPoint(center);
 				if (distance > 0.0 && !polygonPlane.ContainsPoint(center))
