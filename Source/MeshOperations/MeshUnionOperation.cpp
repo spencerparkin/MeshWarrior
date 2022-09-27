@@ -14,8 +14,26 @@ MeshUnionOperation::MeshUnionOperation()
 {
 	this->ProcessMeshes(meshA, meshB);
 
-	// Take all outside A polygons with all outside B polygons.
-	// No need to reverse any polygons.
+	Mesh* resultMesh = nullptr;
 
-	return nullptr;
+	if (this->error->length() == 0)
+	{
+		resultMesh = new Mesh();
+
+		this->graphA->ForAllElements([&resultMesh](MeshGraph::GraphElement* element) -> bool {
+			Graph::Node* node = dynamic_cast<Graph::Node*>(element);
+			if (node && node->side == Graph::Node::OUTSIDE)
+				resultMesh->AddFace(node->MakePolygon());
+			return false;
+		});
+
+		this->graphB->ForAllElements([&resultMesh](MeshGraph::GraphElement* element) -> bool {
+			Graph::Node* node = dynamic_cast<Graph::Node*>(element);
+			if (node && node->side == Graph::Node::OUTSIDE)
+				resultMesh->AddFace(node->MakePolygon());
+			return false;
+		});
+	}
+
+	return resultMesh;
 }

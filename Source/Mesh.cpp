@@ -205,6 +205,19 @@ bool Mesh::ConvexPolygon::HasVertex(const Vector& point, double eps /*= 1e-6*/) 
 	return false;
 }
 
+Mesh::ConvexPolygon& Mesh::ConvexPolygon::ReverseWinding()
+{
+	for (int i = 0; i < (int)this->vertexArray.size() / 2; i++)
+	{
+		int j = int(this->vertexArray.size()) - 1 - i;
+		Vertex vertex = this->vertexArray[i];
+		this->vertexArray[i] = this->vertexArray[j];
+		this->vertexArray[j] = vertex;
+	}
+
+	return *this;
+}
+
 /*static*/ Mesh* Mesh::GenerateConvexHull(const std::vector<Vector>& pointArray)
 {
 	// TODO: Write this.

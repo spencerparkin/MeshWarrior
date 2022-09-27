@@ -14,8 +14,28 @@ MeshIntersectionOperation::MeshIntersectionOperation()
 {
 	this->ProcessMeshes(meshA, meshB);
 
-	// Take all inside A polygons with all inside B polygons.
-	// Reverse all taken polygons.
+	Mesh* resultMesh = nullptr;
 
-	return nullptr;
+	if (this->error->length() == 0)
+	{
+		resultMesh = new Mesh();
+
+		std::vector<Graph::Node*> nodeArray;
+
+		this->graphA->ForAllElements([&resultMesh](MeshGraph::GraphElement* element) -> bool {
+			Graph::Node* node = dynamic_cast<Graph::Node*>(element);
+			if (node && node->side == Graph::Node::INSIDE)
+				resultMesh->AddFace(node->MakePolygon().ReverseWinding());
+			return false;
+		});
+
+		this->graphB->ForAllElements([&resultMesh](MeshGraph::GraphElement* element) -> bool {
+			Graph::Node* node = dynamic_cast<Graph::Node*>(element);
+			if (node && node->side == Graph::Node::INSIDE)
+				resultMesh->AddFace(node->MakePolygon().ReverseWinding());
+			return false;
+		});
+	}
+
+	return resultMesh;
 }

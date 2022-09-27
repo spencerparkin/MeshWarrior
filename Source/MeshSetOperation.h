@@ -81,6 +81,7 @@ namespace MeshWarrior
 					OUTSIDE
 				};
 
+				Mesh::ConvexPolygon MakePolygon() const;
 				Side OppositeSide() const;
 
 				Side side;

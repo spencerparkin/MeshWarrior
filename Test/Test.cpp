@@ -15,7 +15,7 @@ int main()
 	Mesh* meshB = objFormat.LoadMesh("Box.OBJ");
 
 	Mesh* meshResult = nullptr;
-	MeshOperation* meshOp = new MeshUnionOperation();
+	MeshOperation* meshOp = new MeshIntersectionOperation();
 
 	if (meshA && meshB)
 		meshResult = meshOp->Calculate(meshA, meshB);

@@ -450,7 +450,7 @@ void MeshSetOperation::ColorGraph(Graph::Node* rootNode)
 		nodeQueue.erase(iter);
 
 #if MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES
-		Mesh::ConvexPolygon polygon = node->meshGraph->GetTargetMesh()->GetFace(node->polygon)->GeneratePolygon(node->meshGraph->GetTargetMesh());
+		Mesh::ConvexPolygon polygon = node->MakePolygon();
 		if (node->side == Graph::Node::INSIDE)
 			insideMesh.AddFace(polygon);
 		else if (node->side == Graph::Node::OUTSIDE)
@@ -545,4 +545,10 @@ MeshSetOperation::Graph::Node::Side MeshSetOperation::Graph::Node::OppositeSide(
 		return Side::OUTSIDE;
 
 	return Side::UNKNOWN;
+}
+
+Mesh::ConvexPolygon MeshSetOperation::Graph::Node::MakePolygon() const
+{
+	const Mesh* targetMesh = this->meshGraph->GetTargetMesh();
+	return targetMesh->GetFace(this->polygon)->GeneratePolygon(targetMesh);
 }

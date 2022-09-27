@@ -48,6 +48,8 @@ namespace MeshWarrior
 
 			bool HasVertex(const Vector& point, double eps = 1e-6) const;
 
+			ConvexPolygon& ReverseWinding();
+
 			std::vector<Vertex> vertexArray;
 		};
 
