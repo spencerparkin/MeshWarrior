@@ -189,7 +189,10 @@ LineSegment::LineSegment(const Vector& pointA, const Vector& pointB)
 	if (!Line::ContainsPoint(point, eps))
 		return false;
 
-	return (point - this->center).Length() <= this->radius + eps;
+	Vector vector = point - this->center;
+	Vector projection;
+	projection.Project(vector, this->unitNormal);
+	return projection.Length() <= this->radius + eps;
 }
 
 Vector LineSegment::GetPoint(int i) const

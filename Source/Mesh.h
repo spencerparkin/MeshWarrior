@@ -46,6 +46,8 @@ namespace MeshWarrior
 			void ToBasicPolygon(MeshWarrior::ConvexPolygon& polygon) const;
 			void FromBasicPolygon(const MeshWarrior::ConvexPolygon& polygon);
 
+			bool HasVertex(const Vector& point, double eps = 1e-6) const;
+
 			std::vector<Vertex> vertexArray;
 		};
 

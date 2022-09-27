@@ -4,9 +4,14 @@
 #include "BoundingBoxTree.h"
 #include "Mesh.h"
 #include "Polygon.h"
+#include "Polyline.h"
 #include "TypeHeap.h"
 #include "MeshGraph.h"
 #include <set>
+
+#define MW_DEBUG_DUMP_REFINED_MESHES			0
+#define MW_DEBUG_DUMP_CUT_BOUNDARY				0
+#define MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES		0
 
 namespace MeshWarrior
 {
@@ -85,7 +90,7 @@ namespace MeshWarrior
 		void ProcessMeshes(const Mesh* meshA, const Mesh* meshB);
 		void ProcessCollisionPair(const CollisionPair& pair, std::set<Face*>& newFaceSetA, std::set<Face*>& newFaceSetB);
 		void ColorGraph(Graph::Node* rootNode);
-		bool PointIsOnCutBoundary(const Vector& point) const;
+		bool PointIsOnCutBoundary(const Vector& point, double eps = 1e-6) const;
 		Graph::Node* FindOutsideNode(const Mesh* desiredTargetMesh, const Sphere* sphere, const std::list<Graph::Node*>& nodeList);
 
 		std::set<Face*>* faceSet;
@@ -93,6 +98,7 @@ namespace MeshWarrior
 		BoundingBoxTree faceTree;
 		Mesh refinedMeshA, refinedMeshB;
 		Graph* graphA, *graphB;
-		std::vector<LineSegment*>* cutBoundaryArray;
+		std::vector<LineSegment*>* cutBoundarySegmentArray;
+		std::vector<Polyline*>* cutBoundaryPolylineArray;
 	};
 }

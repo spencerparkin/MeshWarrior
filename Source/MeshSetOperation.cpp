@@ -1,7 +1,9 @@
 #include "MeshSetOperation.h"
 #include "Mesh.h"
-#include "Polyline.h"	// DEBUG INCLUDE
-#include "FileFormats/OBJFormat.h"	// DEBUG INCLUDE
+#include "Polyline.h"
+#if MW_DEBUG_DUMP_REFINED_MESHES || MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES
+#	include "FileFormats/OBJFormat.h"
+#endif
 #include <set>
 #include <assert.h>
 
@@ -11,7 +13,8 @@ MeshSetOperation::MeshSetOperation()
 {
 	this->faceSet = new std::set<Face*>();
 	this->faceHeap = new StackHeap<Face>(1024);	// TODO: Use regular heap in release?
-	this->cutBoundaryArray = new std::vector<LineSegment*>();
+	this->cutBoundarySegmentArray = new std::vector<LineSegment*>();
+	this->cutBoundaryPolylineArray = new std::vector<Polyline*>();
 	this->graphA = new Graph();
 	this->graphB = new Graph();
 }
@@ -24,10 +27,14 @@ MeshSetOperation::MeshSetOperation()
 	delete this->faceSet;
 	delete this->faceHeap;
 
-	for (LineSegment* lineSegment : *this->cutBoundaryArray)
+	for (LineSegment* lineSegment : *this->cutBoundarySegmentArray)
 		delete lineSegment;
 
-	delete this->cutBoundaryArray;
+	for (Polyline* polyline : *this->cutBoundaryPolylineArray)
+		delete polyline;
+
+	delete this->cutBoundarySegmentArray;
+	delete this->cutBoundaryPolylineArray;
 
 	this->graphA;
 	this->graphB;
@@ -35,6 +42,8 @@ MeshSetOperation::MeshSetOperation()
 
 void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 {
+	*this->error = "";
+
 	//
 	// Throw all the polygons from each mesh into a single set.
 	// Label each polygon so that we can continue to differentiate between them.
@@ -186,6 +195,17 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 	}
 
 	//
+	// At this point, if no cutting segments were generated, we don't have a basis to continue.
+	// Admittedly, this is a limitation of the algorithm, but not an entirely unreasonable one.
+	//
+
+	if (this->cutBoundarySegmentArray->size() == 0)
+	{
+		*this->error = "No cut boundary was produced.  Cannot continue.";
+		return;
+	}
+
+	//
 	// Bucket sort the chopped-up polygons into their respective meshes.
 	//
 
@@ -203,37 +223,34 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 	this->refinedMeshA.FromPolygonArray(polygonArrayA);
 	this->refinedMeshB.FromPolygonArray(polygonArrayB);
 
-	// For debugging purposes, dump the refined meshes for examination.
-#if true
-	*refinedMeshA.name = "refined_mesh_A";
-	*refinedMeshB.name = "refined_mesh_B";
-	
-	OBJFormat objFormat;
-	
-	std::vector<FileObject*> fileObjectArray;
-	fileObjectArray.push_back(&refinedMeshA);
-	fileObjectArray.push_back(&refinedMeshB);
-
-	/* Unfortunately, 3DS Max can't do polylines.
-	std::vector<Polyline*> polylineArray;
-	Polyline::GeneratePolylines(*this->cutBoundaryArray, polylineArray);
-	for (Polyline* polyline : polylineArray)
-		fileObjectArray.push_back(polyline);
-	*/
-
-	objFormat.Save("refined_meshes.obj", fileObjectArray);
-
-	//for (Polyline* polyline : polylineArray)
-	//	delete polyline;
-#endif
-
 	//
 	// Now generate a graph for each refined mesh.  This makes it easier for
-	// us to traverse over the surface of each refined mesh.
+	// us to traverse over the surface of each refined mesh.  Also, use a
+	// polyline for the cut boundary since it's easier to work with.
 	//
 
 	this->graphA->Generate(&this->refinedMeshA);
 	this->graphB->Generate(&this->refinedMeshB);
+
+	Polyline::GeneratePolylines(*this->cutBoundarySegmentArray, *this->cutBoundaryPolylineArray);
+
+#if MW_DEBUG_DUMP_REFINED_MESHES
+	*refinedMeshA.name = "refined_mesh_A";
+	*refinedMeshB.name = "refined_mesh_B";
+
+	OBJFormat objFormat;
+
+	std::vector<FileObject*> fileObjectArray;
+	fileObjectArray.push_back(&refinedMeshA);
+	fileObjectArray.push_back(&refinedMeshB);
+
+#if MW_DEBUG_DUMP_CUT_BOUNDARY
+	for (Polyline* polyline : *this->cutBoundaryPolylineArray)
+		fileObjectArray.push_back(polyline);
+#endif //MW_DEBUG_DUMP_CUT_BOUNDARY
+
+	objFormat.Save("refined_meshes.obj", fileObjectArray);
+#endif //MW_DEBUG_DUMP_REFINED_MESHES
 
 	//
 	// Gather the nodes from both graphs into one list.
@@ -387,7 +404,7 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 		// Store the intersection for later use.  We'll need it when coloring the graph.
 		LineSegment* lineSegment = dynamic_cast<LineSegment*>(shape);
 		assert(lineSegment);
-		this->cutBoundaryArray->push_back(lineSegment);
+		this->cutBoundarySegmentArray->push_back(lineSegment);
 
 		Plane planeA, planeB;
 		polygonA.CalcPlane(planeA);
@@ -422,11 +439,23 @@ void MeshSetOperation::ColorGraph(Graph::Node* rootNode)
 	std::list<Graph::Node*> nodeQueue;
 	nodeQueue.push_back(rootNode);
 
+#if MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES
+	Mesh outsideMesh, insideMesh;
+#endif //MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES
+
 	while (nodeQueue.size() > 0)
 	{
 		std::list<Graph::Node*>::iterator iter = nodeQueue.begin();
 		Graph::Node* node = *iter;
 		nodeQueue.erase(iter);
+
+#if MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES
+		Mesh::ConvexPolygon polygon = node->meshGraph->GetTargetMesh()->GetFace(node->polygon)->GeneratePolygon(node->meshGraph->GetTargetMesh());
+		if (node->side == Graph::Node::INSIDE)
+			insideMesh.AddFace(polygon);
+		else if (node->side == Graph::Node::OUTSIDE)
+			outsideMesh.AddFace(polygon);
+#endif //MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES
 
 		for (int i = 0; i < (int)node->edgeArray.size(); i++)
 		{
@@ -442,16 +471,27 @@ void MeshSetOperation::ColorGraph(Graph::Node* rootNode)
 				else
 					adjacentNode->side = node->side;
 
-				nodeQueue.push_back(node);
+				nodeQueue.push_back(adjacentNode);
 			}
 		}
 	}
+
+#if MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES
+	OBJFormat objFormat;
+	std::vector<FileObject*> fileObjectArray;
+	fileObjectArray.push_back(&insideMesh);
+	fileObjectArray.push_back(&outsideMesh);
+	if (rootNode->meshGraph == this->graphA)
+		objFormat.Save("DebugMeshA.OBJ", fileObjectArray);
+	else if (rootNode->meshGraph == this->graphB)
+		objFormat.Save("DebugMeshB.OBJ", fileObjectArray);
+#endif
 }
 
-bool MeshSetOperation::PointIsOnCutBoundary(const Vector& point) const
+bool MeshSetOperation::PointIsOnCutBoundary(const Vector& point, double eps /*= 1e-6*/) const
 {
-	for (int i = 0; i < (int)this->cutBoundaryArray->size(); i++)
-		if ((*this->cutBoundaryArray)[i]->ContainsPoint(point))
+	for (int i = 0; i < (int)this->cutBoundaryPolylineArray->size(); i++)
+		if ((*this->cutBoundaryPolylineArray)[i]->HasVertex(point, eps))
 			return true;
 
 	return false;

@@ -79,5 +79,31 @@ Polyline::Polyline()
 
 void Polyline::Reduce()
 {
-	// TODO: Remove triples of colinear points until none remain.
+	// Not the most efficient way of doing it, but I don't imagine I'll be
+	// processing polylines that are terrible big, so maybe it's fine.
+	bool makeAnotherPass = true;
+	while (makeAnotherPass)
+	{
+		makeAnotherPass = false;
+		for (int i = 0; i < (int)this->vertexArray->size() - 2; i++)
+		{
+			LineSegment lineSegment((*this->vertexArray)[i], (*this->vertexArray)[i + 2]);
+			if (lineSegment.ContainsPoint((*this->vertexArray)[i + 1]))
+			{
+				for (int j = i + 1; j < (int)this->vertexArray->size() - 1; j++)
+					(*this->vertexArray)[j] = (*this->vertexArray)[j + 1];
+				this->vertexArray->pop_back();
+				makeAnotherPass = true;
+			}
+		}
+	}
+}
+
+bool Polyline::HasVertex(const Vector& vertex, double eps /*= 1e-6*/) const
+{
+	for (int i = 0; i < (int)this->vertexArray->size(); i++)
+		if (((*this->vertexArray)[i] - vertex).Length() <= eps)
+			return true;
+
+	return false;
 }

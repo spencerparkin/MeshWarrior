@@ -196,6 +196,15 @@ void Mesh::ConvexPolygon::FromBasicPolygon(const MeshWarrior::ConvexPolygon& pol
 	}
 }
 
+bool Mesh::ConvexPolygon::HasVertex(const Vector& point, double eps /*= 1e-6*/) const
+{
+	for (int i = 0; i < (int)this->vertexArray.size(); i++)
+		if ((this->vertexArray[i].point - point).Length() <= eps)
+			return true;
+
+	return false;
+}
+
 /*static*/ Mesh* Mesh::GenerateConvexHull(const std::vector<Vector>& pointArray)
 {
 	// TODO: Write this.
