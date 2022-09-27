@@ -1,5 +1,6 @@
 #include "MeshSetOperation.h"
 #include "Mesh.h"
+#include "Polyline.h"	// DEBUG INCLUDE
 #include "FileFormats/OBJFormat.h"	// DEBUG INCLUDE
 #include <set>
 #include <assert.h>
@@ -206,11 +207,24 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 #if true
 	*refinedMeshA.name = "refined_mesh_A";
 	*refinedMeshB.name = "refined_mesh_B";
+	
 	OBJFormat objFormat;
+	
 	std::vector<FileObject*> fileObjectArray;
 	fileObjectArray.push_back(&refinedMeshA);
 	fileObjectArray.push_back(&refinedMeshB);
+
+	/* Unfortunately, 3DS Max can't do polylines.
+	std::vector<Polyline*> polylineArray;
+	Polyline::GeneratePolylines(*this->cutBoundaryArray, polylineArray);
+	for (Polyline* polyline : polylineArray)
+		fileObjectArray.push_back(polyline);
+	*/
+
 	objFormat.Save("refined_meshes.obj", fileObjectArray);
+
+	//for (Polyline* polyline : polylineArray)
+	//	delete polyline;
 #endif
 
 	//

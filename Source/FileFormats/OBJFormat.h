@@ -3,6 +3,7 @@
 #include "../FileFormat.h"
 #include "../Vector.h"
 #include "../Mesh.h"
+#include "../Polyline.h"
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -40,5 +41,6 @@ namespace MeshWarrior
 		void LookupAndAssign(const std::vector<Vector>& vectorArray, int i, Vector& result);
 		void FlushMesh(std::vector<FileObject*>& fileObjectArray);
 		void DumpMesh(std::ofstream& fileStream, const Mesh* mesh);
+		void DumpPolyline(std::ofstream& fileStream, const Polyline* polyline);
 	};
 }

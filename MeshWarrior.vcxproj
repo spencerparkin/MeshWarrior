@@ -169,6 +169,7 @@
     <ClInclude Include="Source\MeshOperations\MeshUnionOperation.h" />
     <ClInclude Include="Source\MeshSetOperation.h" />
     <ClInclude Include="Source\MeshTopology.h" />
+    <ClInclude Include="Source\Polyline.h" />
     <ClInclude Include="Source\Shape.h" />
     <ClInclude Include="Source\TypeHeap.h" />
     <ClInclude Include="Source\Vector.h" />
@@ -190,6 +191,7 @@
     <ClCompile Include="Source\MeshOperations\MeshUnionOperation.cpp" />
     <ClCompile Include="Source\MeshSetOperation.cpp" />
     <ClCompile Include="Source\MeshTopology.cpp" />
+    <ClCompile Include="Source\Polyline.cpp" />
     <ClCompile Include="Source\Shape.cpp" />
     <ClCompile Include="Source\Vector.cpp" />
   </ItemGroup>

@@ -1,5 +1,4 @@
 #include "OBJFormat.h"
-#include "../Mesh.h"
 
 using namespace MeshWarrior;
 
@@ -166,6 +165,10 @@ void OBJFormat::LookupAndAssign(const std::vector<Vector>& vectorArray, int i, V
 		const Mesh* mesh = dynamic_cast<const Mesh*>(fileObject);
 		if (mesh)
 			this->DumpMesh(fileStream, mesh);
+
+		const Polyline* polyline = dynamic_cast<const Polyline*>(fileObject);
+		if (polyline)
+			this->DumpPolyline(fileStream, polyline);
 	}
 
 	fileStream << "# Total vertices: " << this->totalVertices << "\n";
@@ -224,4 +227,22 @@ void OBJFormat::DumpMesh(std::ofstream& fileStream, const Mesh* mesh)
 
 	this->totalVertices += mesh->GetNumVertices();
 	this->totalFaces += mesh->GetNumFaces();
+}
+
+void OBJFormat::DumpPolyline(std::ofstream& fileStream, const Polyline* polyline)
+{
+	for (int i = 0; i < (int)polyline->vertexArray->size(); i++)
+	{
+		const Vector& vertex = (*polyline->vertexArray)[i];
+		fileStream << "v " << vertex.x << " " << vertex.y << " " << vertex.z << "\n";
+	}
+
+	fileStream << "\nl";
+
+	for (int i = 0; i < (int)polyline->vertexArray->size(); i++)
+		fileStream << " " << i + this->totalVertices + 1;
+
+	fileStream << "\n\n";
+
+	this->totalVertices += (int)polyline->vertexArray->size();
 }

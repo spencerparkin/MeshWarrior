@@ -76,6 +76,9 @@
     <ClInclude Include="Source\Compressor.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Polyline.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Vector.cpp">
@@ -130,6 +133,9 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Source\MeshGraph.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Polyline.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
