@@ -2,6 +2,7 @@
 #include "Polygon.h"
 #include "Shape.h"
 #include "Compressor.h"
+#include <assert.h>
 
 using namespace MeshWarrior;
 
@@ -275,6 +276,12 @@ MeshGraph::Face::Face(Node* node)
 /*virtual*/ AxisAlignedBox MeshGraph::Face::CalcBoundingBox() const
 {
 	AxisAlignedBox box;
-	//...
+	
+	const Mesh::Face* face = this->node->meshGraph->targetMesh->GetFace(this->node->polygon_i);
+	assert(face);
+	Mesh::ConvexPolygon polygon = face->GeneratePolygon(this->node->meshGraph->targetMesh);
+	for (int i = 0; i < (int)polygon.vertexArray.size(); i++)
+		box.MinimallyExpandToContainPoint(polygon.vertexArray[i].point);
+
 	return box;
 }
