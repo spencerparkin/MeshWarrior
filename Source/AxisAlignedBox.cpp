@@ -89,8 +89,8 @@ void AxisAlignedBox::ScaleAboutCenter(double delta)
 	{
 		length += delta;
 		cornerDelta *= length;
-		this->min = center + cornerDelta;
-		this->max = center - cornerDelta;
+		this->min = center - cornerDelta;
+		this->max = center + cornerDelta;
 	}
 }
 

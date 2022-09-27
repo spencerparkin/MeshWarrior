@@ -56,7 +56,7 @@ void MeshGraph::Generate(const Mesh* mesh)
 		for (BoundingBoxTree::Guest* foundGuest : foundGuestList)
 		{
 			Face* foundFace = (Face*)foundGuest;
-			if (foundFace == face)
+			if (face == foundFace || face->node->LinkedWith(foundFace->node))
 				continue;
 
 			Edge* edge = this->FindCommonEdge(face->node, foundFace->node);
@@ -64,6 +64,7 @@ void MeshGraph::Generate(const Mesh* mesh)
 			{
 				face->node->edgeArray.push_back(edge);
 				foundFace->node->edgeArray.push_back(edge);
+
 				this->graphElementArray->push_back(edge);
 			}
 		}
@@ -89,7 +90,7 @@ MeshGraph::Edge* MeshGraph::FindCommonEdge(Node* nodeA, Node* nodeB)
 		ConvexPolygon* polygonA = &polygon[i];
 		ConvexPolygon* polygonB = &polygon[1 - i];
 
-		for (int j = 0; j < (int)polygonA->vertexArray->size(); i++)
+		for (int j = 0; j < (int)polygonA->vertexArray->size(); j++)
 		{
 			const Vector& vertex = (*polygonA->vertexArray)[j];
 			if (polygonB->ContainsPoint(vertex))
@@ -187,6 +188,15 @@ MeshGraph::Node::Node(MeshGraph* meshGraph) : GraphElement(meshGraph)
 {
 }
 
+bool MeshGraph::Node::LinkedWith(const Node* node) const
+{
+	for (int i = 0; i < (int)this->edgeArray.size(); i++)
+		if (this->edgeArray[i]->GetOtherAdjacency(this) == node)
+			return true;
+
+	return false;
+}
+
 //--------------------------------- EdgeVertex ---------------------------------
 
 MeshGraph::EdgeVertex::EdgeVertex(Edge* edge)
@@ -260,6 +270,11 @@ MeshGraph::Node* MeshGraph::Edge::GetOtherAdjacency(Node* adjacency)
 		return this->adjacentNode[0];
 	else
 		return nullptr;
+}
+
+const MeshGraph::Node* MeshGraph::Edge::GetOtherAdjacency(const Node* adjacency) const
+{
+	return const_cast<Edge*>(this)->GetOtherAdjacency(const_cast<Node*>(adjacency));
 }
 
 //--------------------------------- Face ---------------------------------

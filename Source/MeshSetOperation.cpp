@@ -269,6 +269,9 @@ void MeshSetOperation::ProcessMeshes(const Mesh* meshA, const Mesh* meshB)
 
 	if (outsideNodeA && outsideNodeB)
 	{
+		outsideNodeA->side = Graph::Node::OUTSIDE;
+		outsideNodeB->side = Graph::Node::OUTSIDE;
+
 		this->ColorGraph(outsideNodeA);
 		this->ColorGraph(outsideNodeB);
 	}

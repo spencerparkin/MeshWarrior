@@ -43,6 +43,8 @@ namespace MeshWarrior
 			Node(MeshGraph* meshGraph);
 			virtual ~Node();
 
+			bool LinkedWith(const Node* node) const;
+
 			std::vector<Edge*> edgeArray;
 			int polygon_i;
 		};
@@ -88,6 +90,7 @@ namespace MeshWarrior
 
 			const Mesh::Vertex* GetVertex(int i);
 			Node* GetOtherAdjacency(Node* adjacency);
+			const Node* GetOtherAdjacency(const Node* adjacency) const;
 
 			Node* adjacentNode[2];
 			EdgeVertex* edgeVertex[2];
