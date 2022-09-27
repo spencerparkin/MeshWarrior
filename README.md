@@ -5,3 +5,8 @@ MeshWarrior is a C++ library of code designed to support various operations on 3
 * Saving/loading to/from Wavefront OBJ file format.
 * The union, intersection and difference of meshes.
 
+Following are two snapshots of 3DS Max showing the results of taking the union, intersection, and difference of a sphere and a box.
+
+![snapshotA](https://github.com/spencerparkin/MeshWarrior/blob/main/snapshotA.png?raw=true)
+
+![snapshotB](https://github.com/spencerparkin/MeshWarrior/blob/main/snapshotB.png?raw=true)
