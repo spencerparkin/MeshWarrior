@@ -20,9 +20,9 @@ namespace MeshWarrior
 		void operator=(const Polygon& polygon);
 
 		virtual double ShortestSignedDistanceToPoint(const Vector& point) const override;
-		virtual bool ContainsPoint(const Vector& point, double eps = 1e-5) const override;
+		virtual bool ContainsPoint(const Vector& point, double eps = MW_EPS) const override;
 
-		virtual bool IsValid(double eps = 1e-5) const;
+		virtual bool IsValid(double eps = MW_EPS) const;
 		virtual void Tessellate(std::vector<ConvexPolygon>& polygonArray) const;
 		virtual double CalcArea() const;
 
@@ -46,10 +46,10 @@ namespace MeshWarrior
 		virtual ~ConvexPolygon();
 
 		virtual double ShortestSignedDistanceToPoint(const Vector& point) const override;
-		virtual bool ContainsPoint(const Vector& point, double eps = 1e-5) const override;
+		virtual bool ContainsPoint(const Vector& point, double eps = MW_EPS) const override;
 		virtual Shape* IntersectWith(const Shape* shape) const override;
 
-		virtual bool IsValid(double eps = 1e-5) const override;
+		virtual bool IsValid(double eps = MW_EPS) const override;
 		virtual void Tessellate(std::vector<ConvexPolygon>& polygonArray) const override;
 		virtual double CalcArea() const override;
 

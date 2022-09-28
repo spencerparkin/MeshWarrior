@@ -13,7 +13,7 @@ Shape::Shape()
 {
 }
 
-/*virtual*/ bool Shape::ContainsPoint(const Vector& point, double eps /*= 1e-5*/) const
+/*virtual*/ bool Shape::ContainsPoint(const Vector& point, double eps /*= MW_EPS*/) const
 {
 	double distance = ::fabs(this->ShortestSignedDistanceToPoint(point));
 	return distance <= eps;
@@ -141,7 +141,7 @@ Disk::Disk(const Vector& center, const Vector& normal, double radius) : Plane(ce
 	return (point - this->center + vector).Length();
 }
 
-/*virtual*/ bool Disk::ContainsPoint(const Vector& point, double eps /*= 1e-5*/) const
+/*virtual*/ bool Disk::ContainsPoint(const Vector& point, double eps /*= MW_EPS*/) const
 {
 	if (!Plane::ContainsPoint(point, eps))
 		return false;
@@ -184,7 +184,7 @@ LineSegment::LineSegment(const Vector& pointA, const Vector& pointB)
 	return (point - this->center + vector).Length();
 }
 
-/*virtual*/ bool LineSegment::ContainsPoint(const Vector& point, double eps /*= 1e-5*/) const
+/*virtual*/ bool LineSegment::ContainsPoint(const Vector& point, double eps /*= MW_EPS*/) const
 {
 	if (!Line::ContainsPoint(point, eps))
 		return false;

@@ -15,11 +15,11 @@ namespace MeshWarrior
 		Polyline();
 		virtual ~Polyline();
 
-		static void GeneratePolylines(const std::vector<LineSegment*>& lineSegmentArray, std::vector<Polyline*>& polylineArray, double eps = 1e-6);
+		static void GeneratePolylines(const std::vector<LineSegment*>& lineSegmentArray, std::vector<Polyline*>& polylineArray, double eps = MW_EPS);
 
 		void Reduce();
-		bool HasVertex(const Vector& vertex, double eps = 1e-6) const;
-		bool IsLineLoop(double eps = 1e-6) const;
+		bool HasVertex(const Vector& vertex, double eps = MW_EPS) const;
+		bool IsLineLoop(double eps = MW_EPS) const;
 
 		std::vector<Vector>* vertexArray;
 	};

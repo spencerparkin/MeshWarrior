@@ -65,7 +65,7 @@ bool AxisAlignedBox::IsValid() const
 	return false;
 }
 
-bool AxisAlignedBox::ContainsPointOnBoundary(const Vector& point, double eps /*= 1e-6*/) const
+bool AxisAlignedBox::ContainsPointOnBoundary(const Vector& point, double eps /*= MW_EPS*/) const
 {
 	AxisAlignedBox outerBox(*this), innerBox(*this);
 	outerBox.ScaleAboutCenter(eps / 2.0);

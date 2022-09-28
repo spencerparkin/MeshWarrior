@@ -19,7 +19,7 @@ namespace MeshWarrior
 
 		virtual double ShortestSignedDistanceToPoint(const Vector& point) const override;
 		virtual bool ContainsPoint(const Vector& point, double eps = 0.0) const override;
-		bool ContainsPointOnBoundary(const Vector& point, double eps = 1e-6) const;
+		bool ContainsPointOnBoundary(const Vector& point, double eps = MW_EPS) const;
 		bool ContainsBox(const AxisAlignedBox& box) const;
 
 		void ScaleAboutCenter(double delta);

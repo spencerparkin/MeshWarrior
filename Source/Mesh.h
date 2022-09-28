@@ -47,7 +47,7 @@ namespace MeshWarrior
 			void ToBasicPolygon(MeshWarrior::ConvexPolygon& polygon) const;
 			void FromBasicPolygon(const MeshWarrior::ConvexPolygon& polygon);
 
-			bool HasVertex(const Vector& point, double eps = 1e-6) const;
+			bool HasVertex(const Vector& point, double eps = MW_EPS) const;
 
 			ConvexPolygon& ReverseWinding();
 
@@ -69,9 +69,9 @@ namespace MeshWarrior
 		void Clear();
 		int AddVertex(const Vertex& vertex);
 		bool AddFace(const Face& face);
-		void AddFace(const ConvexPolygon& convexPolygon, double eps = 1e-6);
-		int FindOrCreateVertex(const Vertex& vertex, bool canCreate = true, double eps = 1e-6);
-		int FindVertex(const Vertex& vertex, double eps = 1e-6) const;
+		void AddFace(const ConvexPolygon& convexPolygon, double eps = MW_EPS);
+		int FindOrCreateVertex(const Vertex& vertex, bool canCreate = true, double eps = MW_EPS);
+		int FindVertex(const Vertex& vertex, double eps = MW_EPS) const;
 
 		void ToPolygonArray(std::vector<ConvexPolygon>& polygonArray, bool appendOnly = false) const;
 		void FromPolygonArray(const std::vector<ConvexPolygon>& polygonArray);

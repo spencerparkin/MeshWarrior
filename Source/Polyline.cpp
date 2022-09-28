@@ -14,7 +14,7 @@ Polyline::Polyline()
 	delete this->vertexArray;
 }
 
-/*static*/ void Polyline::GeneratePolylines(const std::vector<LineSegment*>& lineSegmentArray, std::vector<Polyline*>& polylineArray, double eps /*= 1e-6*/)
+/*static*/ void Polyline::GeneratePolylines(const std::vector<LineSegment*>& lineSegmentArray, std::vector<Polyline*>& polylineArray, double eps /*= MW_EPS*/)
 {
 	polylineArray.clear();
 
@@ -99,7 +99,7 @@ void Polyline::Reduce()
 	}
 }
 
-bool Polyline::HasVertex(const Vector& vertex, double eps /*= 1e-6*/) const
+bool Polyline::HasVertex(const Vector& vertex, double eps /*= MW_EPS*/) const
 {
 	for (int i = 0; i < (int)this->vertexArray->size(); i++)
 		if (((*this->vertexArray)[i] - vertex).Length() <= eps)
@@ -108,7 +108,7 @@ bool Polyline::HasVertex(const Vector& vertex, double eps /*= 1e-6*/) const
 	return false;
 }
 
-bool Polyline::IsLineLoop(double eps /*= 1e-6*/) const
+bool Polyline::IsLineLoop(double eps /*= MW_EPS*/) const
 {
 	if (this->vertexArray->size() == 0)
 		return false;

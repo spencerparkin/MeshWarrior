@@ -12,7 +12,7 @@ namespace MeshWarrior
 		virtual ~Shape();
 
 		virtual double ShortestSignedDistanceToPoint(const Vector& point) const = 0;
-		virtual bool ContainsPoint(const Vector& point, double eps = 1e-5) const;
+		virtual bool ContainsPoint(const Vector& point, double eps = MW_EPS) const;
 		virtual Shape* IntersectWith(const Shape* shape) const;
 	};
 
@@ -61,7 +61,7 @@ namespace MeshWarrior
 		virtual ~Disk();
 
 		virtual double ShortestSignedDistanceToPoint(const Vector& point) const override;
-		virtual bool ContainsPoint(const Vector& point, double eps = 1e-5) const override;
+		virtual bool ContainsPoint(const Vector& point, double eps = MW_EPS) const override;
 
 		double radius;
 	};
@@ -75,7 +75,7 @@ namespace MeshWarrior
 		virtual ~LineSegment();
 
 		virtual double ShortestSignedDistanceToPoint(const Vector& point) const override;
-		virtual bool ContainsPoint(const Vector& point, double eps = 1e-5) const override;
+		virtual bool ContainsPoint(const Vector& point, double eps = MW_EPS) const override;
 
 		Vector GetPoint(int i) const;
 

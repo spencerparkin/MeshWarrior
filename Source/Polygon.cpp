@@ -27,7 +27,7 @@ void Polygon::operator=(const Polygon& polygon)
 }
 
 // Note that we're not catching certain cases of degenerate polygons here.
-/*virtual*/ bool Polygon::IsValid(double eps /*= 1e-5*/) const
+/*virtual*/ bool Polygon::IsValid(double eps /*= MW_EPS*/) const
 {
 	if (this->vertexArray->size() < 3)
 		return false;
@@ -49,7 +49,7 @@ void Polygon::operator=(const Polygon& polygon)
 	return 0.0;
 }
 
-/*virtual*/ bool Polygon::ContainsPoint(const Vector& point, double eps /*= 1e-5*/) const
+/*virtual*/ bool Polygon::ContainsPoint(const Vector& point, double eps /*= MW_EPS*/) const
 {
 	// TODO: This is non-trivial as it requires tessellation.
 	return false;
@@ -152,7 +152,7 @@ ConvexPolygon::ConvexPolygon()
 {
 }
 
-/*virtual*/ bool ConvexPolygon::IsValid(double eps /*= 1e-5*/) const
+/*virtual*/ bool ConvexPolygon::IsValid(double eps /*= MW_EPS*/) const
 {
 	if (!Polygon::IsValid(eps))
 		return false;
@@ -215,7 +215,7 @@ bool ConvexPolygon::GenerateEdgePlaneArray(std::vector<Plane>& edgePlaneArray) c
 	return 0.0;
 }
 
-/*virtual*/ bool ConvexPolygon::ContainsPoint(const Vector& point, double eps /*= 1e-5*/) const
+/*virtual*/ bool ConvexPolygon::ContainsPoint(const Vector& point, double eps /*= MW_EPS*/) const
 {
 	Plane plane;
 	this->CalcPlane(plane);
@@ -339,7 +339,7 @@ bool ConvexPolygon::SplitAgainstPlane(const Plane& plane, std::vector<ConvexPoly
 
 	ConvexPolygon polygonFront, polygonBack;
 
-	double eps = 1e-6;
+	double eps = MW_EPS;
 	for (int i = 0; i < (signed)pointArray.size(); i++)
 	{
 		Vector& point = pointArray[i];

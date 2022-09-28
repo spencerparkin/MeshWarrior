@@ -108,7 +108,7 @@ bool Mesh::AddFace(const Face& face)
 	return true;
 }
 
-void Mesh::AddFace(const ConvexPolygon& convexPolygon, double eps /*= 1e-6*/)
+void Mesh::AddFace(const ConvexPolygon& convexPolygon, double eps /*= MW_EPS*/)
 {
 	Face face;
 	for (const Vertex& vertex : convexPolygon.vertexArray)
@@ -117,7 +117,7 @@ void Mesh::AddFace(const ConvexPolygon& convexPolygon, double eps /*= 1e-6*/)
 	this->faceArray->push_back(face);
 }
 
-int Mesh::FindOrCreateVertex(const Vertex& vertex, bool canCreate /*= true*/, double eps /*= 1e-6*/)
+int Mesh::FindOrCreateVertex(const Vertex& vertex, bool canCreate /*= true*/, double eps /*= MW_EPS*/)
 {
 	if (this->index && eps == 0.0)
 		return index->FindOrCreateVertex(vertex, this, canCreate);
@@ -133,7 +133,7 @@ int Mesh::FindOrCreateVertex(const Vertex& vertex, bool canCreate /*= true*/, do
 	return (int)this->vertexArray->size() - 1;
 }
 
-int Mesh::FindVertex(const Vertex& vertex, double eps /*= 1e-6*/) const
+int Mesh::FindVertex(const Vertex& vertex, double eps /*= MW_EPS*/) const
 {
 	return const_cast<Mesh*>(this)->FindOrCreateVertex(vertex, false, eps);
 }
@@ -197,7 +197,7 @@ void Mesh::ConvexPolygon::FromBasicPolygon(const MeshWarrior::ConvexPolygon& pol
 	}
 }
 
-bool Mesh::ConvexPolygon::HasVertex(const Vector& point, double eps /*= 1e-6*/) const
+bool Mesh::ConvexPolygon::HasVertex(const Vector& point, double eps /*= MW_EPS*/) const
 {
 	for (int i = 0; i < (int)this->vertexArray.size(); i++)
 		if ((this->vertexArray[i].point - point).Length() <= eps)

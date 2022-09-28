@@ -607,7 +607,7 @@ void MeshSetOperation::ColorGraph(Graph::Node* rootNode)
 #endif
 }
 
-bool MeshSetOperation::PointIsOnCutBoundary(const Vector& point, double eps /*= 1e-6*/) const
+bool MeshSetOperation::PointIsOnCutBoundary(const Vector& point, double eps /*= MW_EPS*/) const
 {
 	for (int i = 0; i < (int)this->cutBoundaryPolylineArray->size(); i++)
 		if ((*this->cutBoundaryPolylineArray)[i]->HasVertex(point, eps))
