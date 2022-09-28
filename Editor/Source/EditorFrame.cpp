@@ -114,6 +114,8 @@ void EditorFrame::OnImport(wxCommandEvent& event)
 	wxFileDialog fileOpenDlg(this, "Import Meshes", wxEmptyString, wxEmptyString, "OBJ File (*.OBJ)|*.OBJ", wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
 	if (fileOpenDlg.ShowModal() == wxID_OK)
 	{
+		wxBusyCursor busyCursor;
+
 		wxArrayString errorArray;
 		wxArrayString filePathArray;
 		fileOpenDlg.GetPaths(filePathArray);
@@ -152,6 +154,8 @@ void EditorFrame::OnExport(wxCommandEvent& event)
 	wxFileDialog fileSaveDlg(this, "Export Meshes", wxEmptyString, wxEmptyString, "OBJ File (*.OBJ)|*.OBJ", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 	if (fileSaveDlg.ShowModal() == wxID_OK)
 	{
+		wxBusyCursor busyCursor;
+
 		wxArrayString errorArray;
 		wxString filePath = fileSaveDlg.GetPath();
 		FileFormat* fileFormat = this->FindFileFormat(filePath);
@@ -166,6 +170,9 @@ void EditorFrame::OnExport(wxCommandEvent& event)
 			else if (!fileFormat->Save((const char*)filePath.c_str(), fileObjectArray))
 				errorArray.push_back("Failed to save file: " + filePath);
 		}
+
+		this->ShowErrorMessage(errorArray);
+		this->Refresh();
 	}
 }
 
