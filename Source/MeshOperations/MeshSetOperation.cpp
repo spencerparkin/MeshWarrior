@@ -215,17 +215,9 @@ MeshSetOperation::MeshSetOperation(int flags)
 	}
 
 	//
-	// At this point, if no cutting segments were generated, we don't have a basis to continue.
-	// Admittedly, this is a limitation of the algorithm, but not an entirely unreasonable one.
-	//
-
-	if (this->cutBoundarySegmentArray->size() == 0)
-	{
-		*this->error = "No cut boundary was produced.  Cannot continue.";
-		return false;
-	}
-
-	//
+	// Note that at this point, there does not have to be any cutting that
+	// was performed, and therefore, any cut boundary generated.  In the
+	// absense of any cutting, we can still generate a meaningful result.
 	// Bucket sort the chopped-up polygons into their respective meshes.
 	//
 
@@ -294,7 +286,9 @@ MeshSetOperation::MeshSetOperation(int flags)
 
 	//
 	// Find a face on refined mesh A that we believe to be on the outside.
-	// Do the same for refined mesh B.
+	// Do the same for refined mesh B.  If none is found for either, then
+	// we're in trouble.  However, if none is found for just one, then we
+	// will conclude (approximately) that one mesh entirely envelops the other.
 	//
 
 	rootBox.ScaleAboutCenter(2.0);
@@ -302,33 +296,45 @@ MeshSetOperation::MeshSetOperation(int flags)
 	sphere.center = rootBox.CalcCenter();
 	sphere.radius = rootBox.CalcRadius();
 
-	Graph::Node* outsideNodeA = this->FindOutsideNode(&this->refinedMeshA, &sphere, nodeList);
-	Graph::Node* outsideNodeB = this->FindOutsideNode(&this->refinedMeshB, &sphere, nodeList);
+	Graph::Node* initialNodeA = this->FindOutsideNode(&this->refinedMeshA, &sphere, nodeList);
+	Graph::Node* initialNodeB = this->FindOutsideNode(&this->refinedMeshB, &sphere, nodeList);
+	if (initialNodeA && initialNodeB)
+	{
+		initialNodeA->side = Graph::Node::OUTSIDE;
+		initialNodeA->side = Graph::Node::OUTSIDE;
+	}
+	else if (initialNodeA)
+	{
+		initialNodeA->side = Graph::Node::OUTSIDE;
+		initialNodeB = this->FindAnyNode(&this->refinedMeshB, nodeList);
+		if (initialNodeB)
+			initialNodeB->side = Graph::Node::INSIDE;
+	}
+	else if(initialNodeB)
+	{
+		initialNodeB->side = Graph::Node::OUTSIDE;
+		initialNodeA = this->FindAnyNode(&this->refinedMeshA, nodeList);
+		if (initialNodeA)
+			initialNodeA->side = Graph::Node::INSIDE;
+	}
 
-	if (!outsideNodeA && !outsideNodeB)
-		*this->error = "Failed to detect an initial outside polygon for mesh A or mesh B.";
-	else if (!outsideNodeA)
-		*this->error = "Failed to detect an initial outside polygon for mesh A.";
-	else if (!outsideNodeB)
-		*this->error = "Failed to detect an initial outside polygon for mesh B.";
-
-	if (this->error->length() > 0)
+	if (!initialNodeA || !initialNodeB)
+	{
+		*this->error = "Failed to find initial graph nodes for graph coloring.";
 		return false;
+	}
 
 	//
 	// Finally, color the graphs.  That is, determine whether each node is inside or outside.
-	// We do this with a BFS starting from a known outside node.  Whenever we cross a cut
-	// boundary, we switch from outside to inside, or vise-versa.
+	// We do this with a BFS starting from a node for whom's side we do initially know.  Then,
+	// whenever we cross a cut boundary, we switch from outside to inside, or vise-versa.
 	//
 
-	outsideNodeA->side = Graph::Node::OUTSIDE;
-	outsideNodeB->side = Graph::Node::OUTSIDE;
-
-	this->ColorGraph(outsideNodeA);
-	this->ColorGraph(outsideNodeB);
+	this->ColorGraph(initialNodeA);
+	this->ColorGraph(initialNodeB);
 	
 	//
-	// Bucket sort the polygons.
+	// Bucket sort the polygons.  Reverse-wind any inside polygons at the same time.
 	//
 
 	std::vector<Mesh::ConvexPolygon> outsidePolygonArrayA, outsidePolygonArrayB;
@@ -489,6 +495,15 @@ MeshSetOperation::Graph::Node* MeshSetOperation::FindOutsideNode(const Mesh* des
 		delete plane;
 
 	return foundNode;
+}
+
+MeshSetOperation::Graph::Node* MeshSetOperation::FindAnyNode(const Mesh* desiredTargetMesh, const std::list<Graph::Node*>& nodeList)
+{
+	for (Graph::Node* node : nodeList)
+		if (node->meshGraph->GetTargetMesh() == desiredTargetMesh)
+			return node;
+
+	return nullptr;
 }
 
 void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<Face*>& newFaceSetA, std::set<Face*>& newFaceSetB)

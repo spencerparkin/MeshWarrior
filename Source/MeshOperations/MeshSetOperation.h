@@ -102,6 +102,7 @@ namespace MeshWarrior
 		void ColorGraph(Graph::Node* rootNode);
 		bool PointIsOnCutBoundary(const Vector& point, double eps = 1e-6) const;
 		Graph::Node* FindOutsideNode(const Mesh* desiredTargetMesh, const Sphere* sphere, const std::list<Graph::Node*>& nodeList);
+		Graph::Node* FindAnyNode(const Mesh* desiredTargetMesh, const std::list<Graph::Node*>& nodeList);
 
 		std::set<Face*>* faceSet;
 		TypeHeap<Face>* faceHeap;
