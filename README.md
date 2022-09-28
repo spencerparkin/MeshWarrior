@@ -7,6 +7,6 @@ MeshWarrior is a C++ library of code designed to support various operations on 3
 
 Following are two snapshots of 3DS Max showing the results of taking the union, intersection, and difference of a sphere and a box.
 
-![snapshotA](https://github.com/spencerparkin/MeshWarrior/blob/main/snapshotA.png?raw=true)
+![snapshotA](https://github.com/spencerparkin/MeshWarrior/blob/main/SnapshotA.png?raw=true)
 
-![snapshotB](https://github.com/spencerparkin/MeshWarrior/blob/main/snapshotB.png?raw=true)
+![snapshotB](https://github.com/spencerparkin/MeshWarrior/blob/main/SnapshotB.png?raw=true)
