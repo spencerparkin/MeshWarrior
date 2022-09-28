@@ -302,7 +302,7 @@ MeshSetOperation::MeshSetOperation(int flags)
 	if (initialNodeA && initialNodeB)
 	{
 		initialNodeA->side = Graph::Node::OUTSIDE;
-		initialNodeA->side = Graph::Node::OUTSIDE;
+		initialNodeB->side = Graph::Node::OUTSIDE;
 	}
 	else if (initialNodeA)
 	{
