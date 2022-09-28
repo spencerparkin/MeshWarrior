@@ -28,6 +28,8 @@ namespace MeshWarrior
 		Vector& Min(const Vector& vectorA, const Vector& vectorB);
 		Vector& Max(const Vector& vectorA, const Vector& vectorB);
 
+		// TODO: Add lerp and slerp.
+
 		void operator=(const Vector& vector);
 		void operator+=(const Vector& vector);
 		void operator-=(const Vector& vector);

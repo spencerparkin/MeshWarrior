@@ -1,11 +1,19 @@
 #include "EditorFrame.h"
 #include "EditorPanel.h"
+#include "EditorApp.h"
+#include "EditorScene.h"
+#include "FileFormats/OBJFormat.h"
 #include <wx/aboutdlg.h>
+#include <wx/filedlg.h>
+#include <wx/filename.h>
+#include <wx/msgdlg.h>
 
 using namespace MeshWarrior;
 
 EditorFrame::EditorFrame(wxWindow* parent, const wxPoint& pos, const wxSize& size) : wxFrame(parent, wxID_ANY, "Mesh Warrior Editor", pos, size)
 {
+	this->fileFormatArray.push_back(new OBJFormat());
+
 	this->auiManager = new wxAuiManager(this, wxAUI_MGR_LIVE_RESIZE | wxAUI_MGR_DEFAULT);
 
 	wxMenu* fileMenu = new wxMenu();
@@ -44,6 +52,9 @@ EditorFrame::EditorFrame(wxWindow* parent, const wxPoint& pos, const wxSize& siz
 {
 	this->auiManager->UnInit();
 	delete this->auiManager;
+
+	for (FileFormat* fileFormat : this->fileFormatArray)
+		delete fileFormat;
 }
 
 bool EditorFrame::MakePanels()
@@ -102,12 +113,81 @@ void EditorFrame::OnTimer(wxTimerEvent& event)
 
 void EditorFrame::OnImport(wxCommandEvent& event)
 {
+	wxFileDialog fileOpenDlg(this, "Import Meshes", wxEmptyString, wxEmptyString, "OBJ File (*.OBJ)|*.OBJ", wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
+	if (fileOpenDlg.ShowModal() == wxID_OK)
+	{
+		wxArrayString errorArray;
+		wxArrayString filePathArray;
+		fileOpenDlg.GetPaths(filePathArray);
+		for (int i = 0; i < (int)filePathArray.size(); i++)
+		{
+			wxString filePath = filePathArray[i];
+			FileFormat* fileFormat = this->FindFileFormat(filePath);
+			if (!fileFormat)
+				errorArray.push_back("File format not yet supported: " + filePath);
+			else
+			{
+				std::vector<FileObject*> fileObjectArray;
+				if (!fileFormat->Load((const char*)filePath.c_str(), fileObjectArray))
+					errorArray.push_back("Failed to load file: " + filePath);
+				else
+				{
+					for (FileObject* fileObject : fileObjectArray)
+						EditorApp::Get()->scene->fileObjectArray.push_back(fileObject);
+				}
+			}
+		}
 
+		this->ShowErrorMessage(errorArray);
+		this->Refresh();
+	}
 }
 
 void EditorFrame::OnExport(wxCommandEvent& event)
 {
+	wxFileDialog fileSaveDlg(this, "Export Meshes", wxEmptyString, wxEmptyString, "OBJ File (*.OBJ)|*.OBJ", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	if (fileSaveDlg.ShowModal() == wxID_OK)
+	{
+		wxArrayString errorArray;
+		wxString filePath = fileSaveDlg.GetPath();
+		FileFormat* fileFormat = this->FindFileFormat(filePath);
+		if (!fileFormat)
+			errorArray.push_back("File format not yet supported: " + filePath);
+		else
+		{
+			std::vector<FileObject*> fileObjectArray;
+			fileObjectArray = EditorApp::Get()->scene->fileObjectArray;
+			if (!fileFormat->Save((const char*)filePath.c_str(), fileObjectArray))
+				errorArray.push_back("Failed to save file: " + filePath);
+		}
+	}
+}
 
+void EditorFrame::ShowErrorMessage(const wxArrayString& errorArray)
+{
+	if (errorArray.size() > 0)
+	{
+		wxString errorMsg = wxString::Format("Encountered %d error(s)...\n\n", errorArray.size());
+		for (int i = 0; i < (int)errorArray.size(); i++)
+			errorMsg += errorArray[i] + "\n";
+
+		wxMessageBox(errorMsg, "Error!", wxICON_ERROR, this);
+	}
+}
+
+FileFormat* EditorFrame::FindFileFormat(const wxString& filePath)
+{
+	wxFileName fileName(filePath);
+	wxString ext = fileName.GetExt().Lower();
+
+	for (FileFormat* fileFormat : this->fileFormatArray)
+	{
+		wxString supportedExt = wxString(fileFormat->SupportedExtension().c_str()).Lower();
+		if (supportedExt == ext)
+			return fileFormat;
+	}
+
+	return nullptr;
 }
 
 void EditorFrame::OnExit(wxCommandEvent& event)

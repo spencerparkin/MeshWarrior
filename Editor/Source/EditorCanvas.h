@@ -1,6 +1,7 @@
 #pragma once
 
 #include <wx/glcanvas.h>
+#include "Transform.h"
 
 namespace MeshWarrior
 {
@@ -17,5 +18,6 @@ namespace MeshWarrior
 
 		wxGLContext* context;
 		static int attributeList[];
+		Transform cameraTransform;
 	};
 }

@@ -14,6 +14,11 @@ OBJFormat::OBJFormat()
 	delete this->data;
 }
 
+/*virtual*/ std::string OBJFormat::SupportedExtension()
+{
+	return "OBJ";
+}
+
 /*virtual*/ bool OBJFormat::Load(const std::string& meshFile, std::vector<FileObject*>& fileObjectArray)
 {
 	std::ifstream fileStream(meshFile, std::ios::in);

@@ -1,4 +1,6 @@
 #include "EditorCanvas.h"
+#include "EditorApp.h"
+#include "EditorScene.h"
 
 using namespace MeshWarrior;
 
@@ -10,6 +12,16 @@ EditorCanvas::EditorCanvas(wxWindow* parent) : wxGLCanvas(parent, wxID_ANY, attr
 
 	this->Bind(wxEVT_PAINT, &EditorCanvas::OnPaint, this);
 	this->Bind(wxEVT_SIZE, &EditorCanvas::OnSize, this);
+
+	Vector xAxis(1.0, 0.0, 0.0);
+	Vector yAxis(0.0, 1.0, 0.0);
+	Vector zAxis(0.0, 0.0, 1.0);
+
+	this->cameraTransform.matrix.SetCol(0, xAxis);
+	this->cameraTransform.matrix.SetCol(0, yAxis);
+	this->cameraTransform.matrix.SetCol(0, zAxis);
+
+	this->cameraTransform.translation = Vector(0.0, 0.0, -10.0);
 }
 
 /*virtual*/ EditorCanvas::~EditorCanvas()
@@ -32,7 +44,11 @@ void EditorCanvas::OnPaint(wxPaintEvent& event)
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// TODO: Call render function which can also handle picking mode.
+	// TODO: Setup view matrices here.
+
+	EditorScene* scene = EditorApp::Get()->scene;
+	if (scene)
+		scene->Render(GL_RENDER);
 
 	glFlush();
 

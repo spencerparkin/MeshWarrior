@@ -17,6 +17,8 @@ namespace MeshWarrior
 		OBJFormat();
 		virtual ~OBJFormat();
 
+		virtual std::string SupportedExtension() override;
+
 		virtual bool Load(const std::string& meshFile, std::vector<FileObject*>& fileObjectArray) override;
 		virtual bool Save(const std::string& meshFile, const std::vector<FileObject*>& fileObjectArray) override;
 

@@ -5,6 +5,7 @@
 namespace MeshWarrior
 {
 	class EditorFrame;
+	class EditorScene;
 
 	class EditorApp : public wxApp
 	{
@@ -15,7 +16,13 @@ namespace MeshWarrior
 		virtual bool OnInit(void) override;
 		virtual int OnExit(void) override;
 
+		static EditorApp* Get()
+		{
+			return wxDynamicCast(wxApp::GetInstance(), EditorApp);
+		}
+
 		EditorFrame* frame;
+		EditorScene* scene;
 	};
 
 	wxDECLARE_APP(EditorApp);

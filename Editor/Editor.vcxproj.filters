@@ -25,6 +25,9 @@
     <ClInclude Include="Source\EditorCanvas.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="Source\EditorScene.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\EditorApp.cpp">
@@ -40,6 +43,9 @@
       <Filter>Source\Panels</Filter>
     </ClCompile>
     <ClCompile Include="Source\EditorCanvas.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\EditorScene.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

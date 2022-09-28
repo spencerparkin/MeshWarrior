@@ -1,5 +1,6 @@
 #pragma once
 
+#include "FileFormat.h"
 #include <wx/frame.h>
 #include <wx/aui/aui.h>
 #include <wx/timer.h>
@@ -23,8 +24,9 @@ namespace MeshWarrior
 		void OnTimer(wxTimerEvent& event);
 
 		bool MakePanels();
-
 		EditorPanel* FindPanel(wxClassInfo* classInfo);
+		FileFormat* FindFileFormat(const wxString& filePath);
+		void ShowErrorMessage(const wxArrayString& errorArray);
 
 		enum
 		{
@@ -37,5 +39,6 @@ namespace MeshWarrior
 
 		wxAuiManager* auiManager;
 		wxTimer timer;
+		std::vector<FileFormat*> fileFormatArray;
 	};
 }
