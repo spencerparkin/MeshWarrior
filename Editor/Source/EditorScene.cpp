@@ -71,28 +71,38 @@ EditorScene::RenderObject::RenderObject()
 EditorScene::MeshRenderObject::MeshRenderObject(Mesh* mesh)
 {
 	this->mesh = mesh;
+	this->triMesh = nullptr;
 }
 
 /*virtual*/ EditorScene::MeshRenderObject::~MeshRenderObject()
 {
 	delete this->mesh;
+	delete this->triMesh;
 }
 
 /*virtual*/ void EditorScene::MeshRenderObject::Render(GLenum renderMode) const
 {
 	// TODO: Should try to use modern OpenGL with vertex buffers and shader programs here.
 
-	glBegin(GL_POLYGON);	// TODO: No, we need to tessellate the polygons before we can render!
-
-	for (int i = 0; i < (int)this->mesh->GetNumFaces(); i++)
+	if (!this->triMesh)
 	{
-		const Mesh::Face* face = this->mesh->GetFace(i);
+		this->triMesh = this->mesh->GenerateTriangleMesh();
+		wxASSERT(this->triMesh->IsTriangleMesh());
+	}
+
+	glBegin(GL_TRIANGLES);
+
+	for (int i = 0; i < (int)this->triMesh->GetNumFaces(); i++)
+	{
+		const Mesh::Face* face = this->triMesh->GetFace(i);
+		wxASSERT(face->vertexArray.size() == 3);
+
 		for (int j = 0; j < (int)face->vertexArray.size(); j++)
 		{
-			const Mesh::Vertex* vertex = this->mesh->GetVertex(j);
+			const Mesh::Vertex* vertex = this->triMesh->GetVertex(j);
 			
-			glNormal3f(vertex->normal.x, vertex->normal.y, vertex->normal.z);
-			glTexCoord3f(vertex->texCoords.x, vertex->texCoords.y, vertex->texCoords.z);
+			//glNormal3f(vertex->normal.x, vertex->normal.y, vertex->normal.z);
+			//glTexCoord3f(vertex->texCoords.x, vertex->texCoords.y, vertex->texCoords.z);
 			//glColor3f(vertex->color.x, vertex->color.y, vertex->color.z);
 			glColor3f(1.0, 1.0, 1.0);
 			glVertex3f(vertex->point.x, vertex->point.y, vertex->point.z);
@@ -108,8 +118,8 @@ EditorScene::MeshRenderObject::MeshRenderObject(Mesh* mesh)
 {
 	// TODO: Apply the local-to-world transform to the mesh, then reset the local-to-world transform.
 	//       This is also where we would rebuild our vertex buffers, by the way.
-	
-	// TODO: Regardless, here we need to generate our triangle list from tessellation.
+
+
 
 	this->localToWorldTransform.SetIdentity();
 }

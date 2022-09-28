@@ -112,15 +112,12 @@ MeshGraph::Edge* MeshGraph::FindCommonEdge(Node* nodeA, Node* nodeB)
 	if (pointArray.size() == 2)
 	{
 		edge = new Edge(this);
+
 		edge->adjacentNode[0] = nodeA;
 		edge->adjacentNode[1] = nodeB;
 
-		Mesh::Vertex vertexA, vertexB;
-		vertexA.point = pointArray[0]->center;
-		vertexB.point = pointArray[1]->center;
-
-		edge->vertex[0] = this->targetMesh->FindVertex(vertexA);
-		edge->vertex[1] = this->targetMesh->FindVertex(vertexB);
+		edge->vertex[0] = this->targetMesh->FindVertex(pointArray[0]->center);
+		edge->vertex[1] = this->targetMesh->FindVertex(pointArray[1]->center);
 	}
 
 	for (Point* point : pointArray)

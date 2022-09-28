@@ -46,6 +46,7 @@ namespace MeshWarrior
 			virtual void SolidifyTransform() override;
 
 			Mesh* mesh;
+			mutable Mesh* triMesh;
 		};
 
 		std::list<RenderObject*> renderObjectList;

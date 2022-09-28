@@ -206,7 +206,55 @@ bool ConvexPolygon::GenerateEdgePlaneArray(std::vector<Plane>& edgePlaneArray) c
 // we override it here, because we can do it faster knowing we're convex.
 /*virtual*/ void ConvexPolygon::Tessellate(std::vector<ConvexPolygon>& polygonArray) const
 {
-	// TODO: Write this.
+	polygonArray.clear();
+
+	ConvexPolygon polygon;
+
+	std::vector<Vector> workingVertexArray = *this->vertexArray;
+	while (workingVertexArray.size() > 3)
+	{
+		polygon.vertexArray->clear();
+
+		int bestVertex = -1;
+		double maxTriangleArea = FLT_MIN;
+		for (int i = 0; i < (int)workingVertexArray.size(); i++)
+		{
+			int j = (i + 1) % workingVertexArray.size();
+			int k = (i + 2) % workingVertexArray.size();
+
+			const Vector& vertexA = workingVertexArray[i];
+			const Vector& vertexB = workingVertexArray[j];
+			const Vector& vertexC = workingVertexArray[k];
+
+			Vector vector;
+			vector.Cross(vertexB - vertexA, vertexC - vertexA);
+			double triangleArea = vector.Length() / 2.0;
+
+			if (triangleArea > maxTriangleArea)
+			{
+				maxTriangleArea = triangleArea;
+				bestVertex = i;
+			}
+		}
+
+		int i = bestVertex;
+		int j = (i + 1) % workingVertexArray.size();
+		int k = (i + 2) % workingVertexArray.size();
+
+		const Vector& vertexA = workingVertexArray[i];
+		const Vector& vertexB = workingVertexArray[j];
+		const Vector& vertexC = workingVertexArray[k];
+
+		polygon.vertexArray->push_back(vertexA);
+		polygon.vertexArray->push_back(vertexB);
+		polygon.vertexArray->push_back(vertexC);
+
+		polygonArray.push_back(polygon);
+		workingVertexArray.erase(workingVertexArray.begin() + j);
+	}
+
+	*polygon.vertexArray = workingVertexArray;
+	polygonArray.push_back(polygon);
 }
 
 /*virtual*/ double ConvexPolygon::ShortestSignedDistanceToPoint(const Vector& point) const

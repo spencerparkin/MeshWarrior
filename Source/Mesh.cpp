@@ -133,8 +133,10 @@ int Mesh::FindOrCreateVertex(const Vertex& vertex, bool canCreate /*= true*/, do
 	return (int)this->vertexArray->size() - 1;
 }
 
-int Mesh::FindVertex(const Vertex& vertex, double eps /*= MW_EPS*/) const
+int Mesh::FindVertex(const Vector& vertexPoint, double eps /*= MW_EPS*/) const
 {
+	Vertex vertex;
+	vertex.point = vertexPoint;
 	return const_cast<Mesh*>(this)->FindOrCreateVertex(vertex, false, eps);
 }
 
@@ -163,6 +165,60 @@ AxisAlignedBox Mesh::CalcBoundingBox() const
 		boundingBox.MinimallyExpandToContainPoint((*this->vertexArray)[i].point);
 
 	return boundingBox;
+}
+
+// If this mesh already is a triangle mesh, then this just clones the mesh.
+Mesh* Mesh::GenerateTriangleMesh() const
+{
+	Mesh* triangleMesh = new Mesh();
+
+	std::vector<MeshWarrior::ConvexPolygon> basicTriangleArray;
+
+	std::vector<ConvexPolygon> polygonArray;
+	this->ToPolygonArray(polygonArray);
+
+	for (ConvexPolygon& polygon : polygonArray)
+	{
+		MeshWarrior::ConvexPolygon basicPolygon;
+		polygon.ToBasicPolygon(basicPolygon);
+
+		std::vector<MeshWarrior::ConvexPolygon> basicPolygonArray;
+		basicPolygon.Tessellate(basicPolygonArray);
+
+		for (MeshWarrior::ConvexPolygon& basicTriangle : basicPolygonArray)
+			basicTriangleArray.push_back(basicTriangle);
+	}
+
+	this->RebuildIndexIfNeeded();
+
+	for (const Vertex& vertex : *this->vertexArray)
+		triangleMesh->AddVertex(vertex);
+
+	triangleMesh->RebuildIndexIfNeeded();
+
+	for (MeshWarrior::ConvexPolygon& basicTriangle : basicTriangleArray)
+	{
+		ConvexPolygon triangle;
+		for (int i = 0; i < 3; i++)
+		{
+			int j = this->FindVertex((*basicTriangle.vertexArray)[i], 0.0);
+			const Vertex* vertex = this->GetVertex(j);
+			triangle.vertexArray.push_back(*vertex);
+		}
+
+		triangleMesh->AddFace(triangle, 0.0);
+	}
+
+	return triangleMesh;
+}
+
+bool Mesh::IsTriangleMesh() const
+{
+	for (const Face& face : *this->faceArray)
+		if (face.vertexArray.size() != 3)
+			return false;
+
+	return true;
 }
 
 Mesh::ConvexPolygon Mesh::Face::GeneratePolygon(const Mesh* mesh) const
@@ -225,7 +281,7 @@ Mesh::ConvexPolygon& Mesh::ConvexPolygon::ReverseWinding()
 	return nullptr;
 }
 
-void Mesh::RebuildIndexIfNeeded()
+void Mesh::RebuildIndexIfNeeded() const
 {
 	if (!this->index || !this->index->IsValid(this))
 	{

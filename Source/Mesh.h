@@ -71,16 +71,16 @@ namespace MeshWarrior
 		bool AddFace(const Face& face);
 		void AddFace(const ConvexPolygon& convexPolygon, double eps = MW_EPS);
 		int FindOrCreateVertex(const Vertex& vertex, bool canCreate = true, double eps = MW_EPS);
-		int FindVertex(const Vertex& vertex, double eps = MW_EPS) const;
+		int FindVertex(const Vector& vertexPoint, double eps = MW_EPS) const;
 
 		void ToPolygonArray(std::vector<ConvexPolygon>& polygonArray, bool appendOnly = false) const;
 		void FromPolygonArray(const std::vector<ConvexPolygon>& polygonArray);
 
 		AxisAlignedBox CalcBoundingBox() const;
-
 		static Mesh* GenerateConvexHull(const std::vector<Vector>& pointArray);
-
-		void RebuildIndexIfNeeded();
+		Mesh* GenerateTriangleMesh() const;
+		bool IsTriangleMesh() const;
+		void RebuildIndexIfNeeded() const;
 
 	private:
 
@@ -107,6 +107,6 @@ namespace MeshWarrior
 			std::map<std::string, int>* vertexMap;
 		};
 
-		Index* index;
+		mutable Index* index;
 	};
 }
