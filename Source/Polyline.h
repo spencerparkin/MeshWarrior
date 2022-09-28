@@ -19,6 +19,7 @@ namespace MeshWarrior
 
 		void Reduce();
 		bool HasVertex(const Vector& vertex, double eps = 1e-6) const;
+		bool IsLineLoop(double eps = 1e-6) const;
 
 		std::vector<Vector>* vertexArray;
 	};

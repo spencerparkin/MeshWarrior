@@ -244,6 +244,7 @@ MeshSetOperation::MeshSetOperation(int flags)
 	this->graphA->Generate(&this->refinedMeshA);
 	this->graphB->Generate(&this->refinedMeshB);
 
+	// Do these need to be line-loops in all cases?
 	Polyline::GeneratePolylines(*this->cutBoundarySegmentArray, *this->cutBoundaryPolylineArray);
 
 #if MW_DEBUG_DUMP_REFINED_MESHES

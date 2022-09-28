@@ -107,3 +107,14 @@ bool Polyline::HasVertex(const Vector& vertex, double eps /*= 1e-6*/) const
 
 	return false;
 }
+
+bool Polyline::IsLineLoop(double eps /*= 1e-6*/) const
+{
+	if (this->vertexArray->size() == 0)
+		return false;
+
+	const Vector& firstVertex = (*this->vertexArray)[0];
+	const Vector& lastVertex = (*this->vertexArray)[this->vertexArray->size() - 1];
+
+	return (firstVertex - lastVertex).Length() <= eps;
+}
