@@ -2,10 +2,14 @@
 
 #include "FileObject.h"
 #include "EditorCanvas.h"
+#include "Transform.h"
 #include <vector>
+#include <list>
 
 namespace MeshWarrior
 {
+	class Mesh;
+
 	class EditorScene
 	{
 	public:
@@ -15,6 +19,35 @@ namespace MeshWarrior
 		void Render(GLenum renderMode) const;
 		void Clear();
 
-		std::vector<FileObject*> fileObjectArray;
+		bool AddFileObject(FileObject* fileObject);
+		void GetAllFileObjects(std::vector<FileObject*>& fileObjectArray);
+
+	private:
+
+		class RenderObject
+		{
+		public:
+			RenderObject();
+			virtual ~RenderObject();
+
+			virtual void Render(GLenum renderMode) const = 0;
+			virtual void SolidifyTransform() = 0;
+
+			Transform localToWorldTransform;
+		};
+
+		class MeshRenderObject : public RenderObject
+		{
+		public:
+			MeshRenderObject(Mesh* mesh);
+			virtual ~MeshRenderObject();
+
+			virtual void Render(GLenum renderMode) const override;
+			virtual void SolidifyTransform() override;
+
+			Mesh* mesh;
+		};
+
+		std::list<RenderObject*> renderObjectList;
 	};
 }

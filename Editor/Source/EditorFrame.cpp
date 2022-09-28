@@ -131,7 +131,13 @@ void EditorFrame::OnImport(wxCommandEvent& event)
 				else
 				{
 					for (FileObject* fileObject : fileObjectArray)
-						EditorApp::Get()->scene->fileObjectArray.push_back(fileObject);
+					{
+						if (!EditorApp::Get()->scene->AddFileObject(fileObject))
+						{
+							errorArray.push_back(wxString::Format("Could not handle loaded object (%s) from file: ", (const char*)fileObject->name->c_str()) + filePath);
+							delete fileObject;
+						}
+					}
 				}
 			}
 		}
@@ -154,8 +160,10 @@ void EditorFrame::OnExport(wxCommandEvent& event)
 		else
 		{
 			std::vector<FileObject*> fileObjectArray;
-			fileObjectArray = EditorApp::Get()->scene->fileObjectArray;
-			if (!fileFormat->Save((const char*)filePath.c_str(), fileObjectArray))
+			EditorApp::Get()->scene->GetAllFileObjects(fileObjectArray);
+			if (fileObjectArray.size() == 0)
+				errorArray.push_back("Nothing was found in the scene to export.");
+			else if (!fileFormat->Save((const char*)filePath.c_str(), fileObjectArray))
 				errorArray.push_back("Failed to save file: " + filePath);
 		}
 	}

@@ -31,6 +31,8 @@ namespace MeshWarrior
 
 		void CalcCameraTransform(Transform& cameraTransform) const;
 
+		static void MakeOpenGLMatrix(const Transform& transform, GLdouble* matrix);
+
 		wxGLContext* context;
 		static int attributeList[];
 		Vector cameraPosition;

@@ -63,6 +63,26 @@ void EditorCanvas::CalcCameraTransform(Transform& cameraTransform) const
 	cameraTransform.matrix.SetProduct(cameraTransform.matrix, pitchMatrix);
 }
 
+/*static*/ void EditorCanvas::MakeOpenGLMatrix(const Transform& transform, GLdouble* matrix)
+{
+	matrix[0] = transform.matrix.ele[0][0];
+	matrix[1] = transform.matrix.ele[1][0];
+	matrix[2] = transform.matrix.ele[2][0];
+	matrix[3] = 0.0;
+	matrix[4] = transform.matrix.ele[0][1];
+	matrix[5] = transform.matrix.ele[1][1];
+	matrix[6] = transform.matrix.ele[2][1];
+	matrix[7] = 0.0;
+	matrix[8] = transform.matrix.ele[0][2];
+	matrix[9] = transform.matrix.ele[1][2];
+	matrix[10] = transform.matrix.ele[2][2];
+	matrix[11] = 0.0;
+	matrix[12] = transform.translation.x;
+	matrix[13] = transform.translation.y;
+	matrix[14] = transform.translation.z;
+	matrix[15] = 1.0;
+}
+
 void EditorCanvas::Render(GLenum renderMode)
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -82,25 +102,8 @@ void EditorCanvas::Render(GLenum renderMode)
 	Transform cameraTransformInv;
 	cameraTransform.GetInverse(cameraTransformInv);
 
-	GLdouble viewMat[16] =
-	{
-		cameraTransformInv.matrix.ele[0][0],
-		cameraTransformInv.matrix.ele[1][0],
-		cameraTransformInv.matrix.ele[2][0],
-		0.0,
-		cameraTransformInv.matrix.ele[0][1],
-		cameraTransformInv.matrix.ele[1][1],
-		cameraTransformInv.matrix.ele[2][1],
-		0.0,
-		cameraTransformInv.matrix.ele[0][2],
-		cameraTransformInv.matrix.ele[1][2],
-		cameraTransformInv.matrix.ele[2][2],
-		0.0,
-		cameraTransformInv.translation.x,
-		cameraTransformInv.translation.y,
-		cameraTransformInv.translation.z,
-		1.0
-	};
+	GLdouble viewMat[16];
+	this->MakeOpenGLMatrix(cameraTransformInv, viewMat);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixd(viewMat);
@@ -203,7 +206,6 @@ void EditorCanvas::OnRightMouseButtonUp(wxMouseEvent& event)
 void EditorCanvas::OnCaptureLost(wxMouseCaptureLostEvent& event)
 {
 	this->adjustingCameraLookDirection = false;
-	this->ReleaseMouse();
 }
 
 void EditorCanvas::OnKeyDown(wxKeyEvent& event)
