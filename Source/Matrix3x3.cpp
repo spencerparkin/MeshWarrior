@@ -87,7 +87,7 @@ void Matrix3x3::SetFromAxisAngle(const Vector& axis, double angle)
 
 	xAxis.Rotate(xAxis, axis, angle);
 	yAxis.Rotate(yAxis, axis, angle);
-	zAxis.Rotate(yAxis, axis, angle);
+	zAxis.Rotate(zAxis, axis, angle);
 
 	this->SetCol(0, xAxis);
 	this->SetCol(1, yAxis);
@@ -154,7 +154,7 @@ bool Matrix3x3::GetInverse(Matrix3x3& matrix) const
 {
 	double det = this->Determinant();
 	double scale = 1.0f / det;
-	if (scale != scale || !::isinf(scale) || ::isnan(scale))
+	if (scale != scale || ::isinf(scale) || ::isnan(scale))
 		return false;
 
 	matrix.ele[0][0] = this->ele[1][1] * this->ele[2][2] - this->ele[2][1] * this->ele[1][2];

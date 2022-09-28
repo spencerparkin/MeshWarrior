@@ -19,5 +19,6 @@ namespace MeshWarrior
 		virtual void DoIdleProcessing(void) override;
 
 		EditorCanvas* canvas;
+		wxMilliClock_t lastTimeMS;
 	};
 }

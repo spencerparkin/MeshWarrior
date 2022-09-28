@@ -10,7 +10,7 @@
 
 using namespace MeshWarrior;
 
-EditorFrame::EditorFrame(wxWindow* parent, const wxPoint& pos, const wxSize& size) : wxFrame(parent, wxID_ANY, "Mesh Warrior Editor", pos, size)
+EditorFrame::EditorFrame(wxWindow* parent, const wxPoint& pos, const wxSize& size) : wxFrame(parent, wxID_ANY, "Mesh Warrior Editor", pos, size), timer(this, ID_Timer)
 {
 	this->fileFormatArray.push_back(new OBJFormat());
 
@@ -42,9 +42,7 @@ EditorFrame::EditorFrame(wxWindow* parent, const wxPoint& pos, const wxSize& siz
 	this->Bind(wxEVT_TIMER, &EditorFrame::OnTimer, this, ID_Timer);
 
 	this->MakePanels();
-
 	this->auiManager->Update();
-
 	this->timer.Start(1);
 }
 

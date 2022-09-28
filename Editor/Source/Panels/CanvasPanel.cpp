@@ -9,6 +9,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(CanvasPanel, EditorPanel);
 CanvasPanel::CanvasPanel()
 {
 	this->canvas = nullptr;
+	this->lastTimeMS = 0LL;
 }
 
 /*virtual*/ CanvasPanel::~CanvasPanel()
@@ -36,4 +37,17 @@ CanvasPanel::CanvasPanel()
 
 /*virtual*/ void CanvasPanel::DoIdleProcessing(void)
 {
+	double deltaTimeSeconds = 0.0;
+
+	if (this->lastTimeMS == 0LL)
+		this->lastTimeMS = wxGetLocalTimeMillis();
+	else
+	{
+		wxMilliClock_t currentTimeMS = wxGetLocalTimeMillis();
+		wxMilliClock_t elapsedTimeMS = currentTimeMS - this->lastTimeMS;
+		deltaTimeSeconds = double(elapsedTimeMS.GetValue()) / 1000.0;
+		this->lastTimeMS = currentTimeMS;
+	}
+
+	this->canvas->Tick(deltaTimeSeconds);
 }
