@@ -2,9 +2,12 @@
 
 #include <wx/frame.h>
 #include <wx/aui/aui.h>
+#include <wx/timer.h>
 
 namespace MeshWarrior
 {
+	class EditorPanel;
+
 	class EditorFrame : public wxFrame
 	{
 	public:
@@ -17,15 +20,22 @@ namespace MeshWarrior
 		void OnExport(wxCommandEvent& event);
 		void OnUpdateMenuItemUI(wxUpdateUIEvent& event);
 		void OnClose(wxCloseEvent& event);
+		void OnTimer(wxTimerEvent& event);
+
+		bool MakePanels();
+
+		EditorPanel* FindPanel(wxClassInfo* classInfo);
 
 		enum
 		{
 			ID_Exit = wxID_HIGHEST,
 			ID_About,
 			ID_Import,
-			ID_Export
+			ID_Export,
+			ID_Timer
 		};
 
 		wxAuiManager* auiManager;
+		wxTimer timer;
 	};
 }

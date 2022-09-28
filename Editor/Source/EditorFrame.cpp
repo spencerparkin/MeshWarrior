@@ -1,4 +1,5 @@
 #include "EditorFrame.h"
+#include "EditorPanel.h"
 #include <wx/aboutdlg.h>
 
 using namespace MeshWarrior;
@@ -30,14 +31,73 @@ EditorFrame::EditorFrame(wxWindow* parent, const wxPoint& pos, const wxSize& siz
 	this->Bind(wxEVT_MENU, &EditorFrame::OnAbout, this, ID_About);
 	this->Bind(wxEVT_UPDATE_UI, &EditorFrame::OnUpdateMenuItemUI, this, ID_Import);
 	this->Bind(wxEVT_UPDATE_UI, &EditorFrame::OnUpdateMenuItemUI, this, ID_Export);
+	this->Bind(wxEVT_TIMER, &EditorFrame::OnTimer, this, ID_Timer);
+
+	this->MakePanels();
 
 	this->auiManager->Update();
+
+	this->timer.Start(1);
 }
 
 /*virtual*/ EditorFrame::~EditorFrame()
 {
 	this->auiManager->UnInit();
 	delete this->auiManager;
+}
+
+bool EditorFrame::MakePanels()
+{
+	wxClassInfo* basePanelClassInfo = wxClassInfo::FindClass("EditorPanel");
+	if (!basePanelClassInfo)
+		return false;
+
+	const wxClassInfo* classInfo = wxClassInfo::GetFirst();
+	while (classInfo)
+	{
+		if (classInfo != basePanelClassInfo && classInfo->IsKindOf(basePanelClassInfo))
+		{
+			EditorPanel* panel = (EditorPanel*)classInfo->CreateObject();
+			panel->Create(this);
+			if (!panel->MakeControls())
+				delete panel;
+			else
+			{
+				wxAuiPaneInfo paneInfo;
+				panel->MakePaneInfo(paneInfo);
+				paneInfo.CloseButton(false);
+				this->auiManager->AddPane(panel, paneInfo);
+			}
+		}
+
+		classInfo = classInfo->GetNext();
+	}
+
+	return true;
+}
+
+EditorPanel* EditorFrame::FindPanel(wxClassInfo* classInfo)
+{
+	wxAuiPaneInfoArray& paneInfoArray = this->auiManager->GetAllPanes();
+	for (int i = 0; i < (signed)paneInfoArray.GetCount(); i++)
+	{
+		wxWindow* window = paneInfoArray[i].window;
+		if (window->IsKindOf(classInfo))
+			return wxDynamicCast(window, EditorPanel);
+	}
+
+	return nullptr;
+}
+
+void EditorFrame::OnTimer(wxTimerEvent& event)
+{
+	wxAuiPaneInfoArray& paneInfoArray = auiManager->GetAllPanes();
+	for (int i = 0; i < (signed)paneInfoArray.GetCount(); i++)
+	{
+		EditorPanel* panel = wxDynamicCast(paneInfoArray[i].window, EditorPanel);
+		if (panel)
+			panel->DoIdleProcessing();
+	}
 }
 
 void EditorFrame::OnImport(wxCommandEvent& event)

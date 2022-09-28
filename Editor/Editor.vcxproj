@@ -20,11 +20,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\EditorApp.h" />
+    <ClInclude Include="Source\EditorCanvas.h" />
     <ClInclude Include="Source\EditorFrame.h" />
+    <ClInclude Include="Source\EditorPanel.h" />
+    <ClInclude Include="Source\Panels\CanvasPanel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\EditorApp.cpp" />
+    <ClCompile Include="Source\EditorCanvas.cpp" />
     <ClCompile Include="Source\EditorFrame.cpp" />
+    <ClCompile Include="Source\EditorPanel.cpp" />
+    <ClCompile Include="Source\Panels\CanvasPanel.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
