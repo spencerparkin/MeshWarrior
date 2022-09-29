@@ -20,10 +20,10 @@ EditorCanvas::EditorCanvas(wxWindow* parent) : wxGLCanvas(parent, wxID_ANY, attr
 	this->Bind(wxEVT_KEY_DOWN, &EditorCanvas::OnKeyDown, this);
 	this->Bind(wxEVT_KEY_UP, &EditorCanvas::OnKeyUp, this);
 
-	this->cameraPosition = Vector(0.0, 0.0, 10.0);
+	this->cameraPosition = Vector(0.0, 0.0, 100.0);
 	this->cameraPitch = 0.0;
 	this->cameraYaw = 0.0;
-	this->cameraTranslationRate = 10.0f;
+	this->cameraTranslationRate = 20.0f;
 	this->cameraRotationSensativity = 0.01f;
 	this->cameraMoveFlags = 0;
 	this->adjustingCameraLookDirection = false;
@@ -119,15 +119,15 @@ void EditorCanvas::Render(GLenum renderMode)
 
 	glColor3f(1.0f, 0.0f, 0.0f);
 	glVertex3f(0.0f, 0.0f, 0.0f);
-	glVertex3f(2.0f, 0.0f, 0.0f);
+	glVertex3f(10.0f, 0.0f, 0.0f);
 
 	glColor3f(0.0f, 1.0f, 0.0f);
 	glVertex3f(0.0f, 0.0f, 0.0f);
-	glVertex3f(0.0f, 2.0f, 0.0f);
+	glVertex3f(0.0f, 10.0f, 0.0f);
 
 	glColor3f(0.0f, 0.0f, 1.0f);
 	glVertex3f(0.0f, 0.0f, 0.0f);
-	glVertex3f(0.0f, 0.0f, 2.0f);
+	glVertex3f(0.0f, 0.0f, 10.0f);
 
 	glEnd();
 

@@ -45,6 +45,8 @@ namespace MeshWarrior
 			virtual void Render(GLenum renderMode) const override;
 			virtual void SolidifyTransform() override;
 
+			void DrawMesh() const;
+
 			Mesh* mesh;
 			mutable Mesh* triMesh;
 		};

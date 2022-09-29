@@ -20,6 +20,8 @@ EditorFrame::EditorFrame(wxWindow* parent, const wxPoint& pos, const wxSize& siz
 	fileMenu->Append(new wxMenuItem(fileMenu, ID_Import, "Import", "Import meshes from a given file location."));
 	fileMenu->Append(new wxMenuItem(fileMenu, ID_Export, "Export", "Export meshes to a given file location."));
 	fileMenu->AppendSeparator();
+	fileMenu->Append(new wxMenuItem(fileMenu, ID_Clear, "Clear", "Remove all meshes from the scene."));
+	fileMenu->AppendSeparator();
 	fileMenu->Append(new wxMenuItem(fileMenu, ID_Exit, "Exit", "Exit the application."));
 
 	wxMenu* helpMenu = new wxMenu();
@@ -35,6 +37,7 @@ EditorFrame::EditorFrame(wxWindow* parent, const wxPoint& pos, const wxSize& siz
 
 	this->Bind(wxEVT_MENU, &EditorFrame::OnImport, this, ID_Import);
 	this->Bind(wxEVT_MENU, &EditorFrame::OnExport, this, ID_Export);
+	this->Bind(wxEVT_MENU, &EditorFrame::OnClear, this, ID_Clear);
 	this->Bind(wxEVT_MENU, &EditorFrame::OnExit, this, ID_Exit);
 	this->Bind(wxEVT_MENU, &EditorFrame::OnAbout, this, ID_About);
 	this->Bind(wxEVT_UPDATE_UI, &EditorFrame::OnUpdateMenuItemUI, this, ID_Import);
@@ -174,6 +177,12 @@ void EditorFrame::OnExport(wxCommandEvent& event)
 		this->ShowErrorMessage(errorArray);
 		this->Refresh();
 	}
+}
+
+void EditorFrame::OnClear(wxCommandEvent& event)
+{
+	EditorApp::Get()->scene->Clear();
+	this->Refresh();
 }
 
 void EditorFrame::ShowErrorMessage(const wxArrayString& errorArray)

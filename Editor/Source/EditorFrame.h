@@ -19,6 +19,7 @@ namespace MeshWarrior
 		void OnAbout(wxCommandEvent& event);
 		void OnImport(wxCommandEvent& event);
 		void OnExport(wxCommandEvent& event);
+		void OnClear(wxCommandEvent& event);
 		void OnUpdateMenuItemUI(wxUpdateUIEvent& event);
 		void OnClose(wxCloseEvent& event);
 		void OnTimer(wxTimerEvent& event);
@@ -34,6 +35,7 @@ namespace MeshWarrior
 			ID_About,
 			ID_Import,
 			ID_Export,
+			ID_Clear,
 			ID_Timer
 		};
 

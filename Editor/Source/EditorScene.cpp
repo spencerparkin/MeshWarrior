@@ -31,7 +31,7 @@ void EditorScene::Render(GLenum renderMode) const
 		EditorCanvas::MakeOpenGLMatrix(renderObject->localToWorldTransform, modelMat);
 
 		glPushMatrix();
-		glLoadMatrixd(modelMat);
+		glMultMatrixd(modelMat);
 
 		renderObject->Render(renderMode);
 
@@ -90,6 +90,17 @@ EditorScene::MeshRenderObject::MeshRenderObject(Mesh* mesh)
 		wxASSERT(this->triMesh->IsTriangleMesh());
 	}
 
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glColor3f(1.0f, 1.0f, 1.0f);
+	this->DrawMesh();
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glColor3f(0.5f, 0.5f, 0.5f);
+	this->DrawMesh();
+}
+
+void EditorScene::MeshRenderObject::DrawMesh() const
+{
 	glBegin(GL_TRIANGLES);
 
 	for (int i = 0; i < (int)this->triMesh->GetNumFaces(); i++)
@@ -99,19 +110,17 @@ EditorScene::MeshRenderObject::MeshRenderObject(Mesh* mesh)
 
 		for (int j = 0; j < (int)face->vertexArray.size(); j++)
 		{
-			const Mesh::Vertex* vertex = this->triMesh->GetVertex(j);
-			
-			//glNormal3f(vertex->normal.x, vertex->normal.y, vertex->normal.z);
-			//glTexCoord3f(vertex->texCoords.x, vertex->texCoords.y, vertex->texCoords.z);
-			//glColor3f(vertex->color.x, vertex->color.y, vertex->color.z);
-			glColor3f(1.0, 1.0, 1.0);
-			glVertex3f(vertex->point.x, vertex->point.y, vertex->point.z);
+			int k = face->vertexArray[j];
+			const Mesh::Vertex* vertex = this->triMesh->GetVertex(k);
+
+			//glNormal3d(vertex->normal.x, vertex->normal.y, vertex->normal.z);
+			//glTexCoord3d(vertex->texCoords.x, vertex->texCoords.y, vertex->texCoords.z);
+			//glColor3d(vertex->color.x, vertex->color.y, vertex->color.z);
+			glVertex3d(vertex->point.x, vertex->point.y, vertex->point.z);
 		}
 	}
 
 	glEnd();
-
-	// TODO: To draw edges, OpenGL might have a wire-frame mode we could use.
 }
 
 /*virtual*/ void EditorScene::MeshRenderObject::SolidifyTransform()
