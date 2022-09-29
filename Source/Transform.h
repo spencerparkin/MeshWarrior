@@ -13,6 +13,7 @@ namespace MeshWarrior
 		void SetIdentity();
 		
 		Vector TransformVector(const Vector& vector) const;
+		Vector TransformPosition(const Vector& position) const;
 		
 		bool SetInverse(const Transform& transform);
 		bool GetInverse(Transform& transform) const;

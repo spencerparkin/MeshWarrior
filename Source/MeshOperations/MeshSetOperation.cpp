@@ -107,7 +107,7 @@ MeshSetOperation::MeshSetOperation(int flags)
 		this->faceTree.AddGuest(face);
 
 	int totalGuests = this->faceTree.TotalGuests();
-	assert(totalGuests == this->faceSet->size());
+	MW_ASSERT(totalGuests == this->faceSet->size());
 
 	//
 	// Find all the initial collision pairs.
@@ -522,7 +522,7 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 	{
 		// Store the intersection for later use.  We'll need it when coloring the graph.
 		LineSegment* lineSegment = dynamic_cast<LineSegment*>(shape);
-		assert(lineSegment);
+		MW_ASSERT(lineSegment);
 		this->cutBoundarySegmentArray->push_back(lineSegment);
 
 		Plane planeA, planeB;
@@ -553,7 +553,7 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 
 void MeshSetOperation::ColorGraph(Graph::Node* rootNode)
 {
-	assert(rootNode->side != Graph::Node::UNKNOWN);
+	MW_ASSERT(rootNode->side != Graph::Node::UNKNOWN);
 
 	std::list<Graph::Node*> nodeQueue;
 	nodeQueue.push_back(rootNode);

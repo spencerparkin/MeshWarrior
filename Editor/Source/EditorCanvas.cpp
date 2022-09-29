@@ -161,15 +161,14 @@ void EditorCanvas::Tick(double deltaTime)
 	if ((this->cameraMoveFlags & MW_CAMERA_MOVE_FLAG_DOWN) != 0)
 		cameraDelta += Vector(0.0, 0.0, 1.0);
 
-	Transform cameraTransform;
-	this->CalcCameraTransform(cameraTransform);
-
-	// Always move relative to where the camera is currently facing.
-	cameraTransform.matrix.MultiplyRight(cameraDelta, cameraDelta);
-	this->cameraPosition += cameraDelta * this->cameraTranslationRate * deltaTime;
-
 	if (cameraDelta.Length() > 0.0)
+	{
+		Transform cameraTransform;
+		this->CalcCameraTransform(cameraTransform);
+		cameraDelta =  cameraTransform.TransformVector(cameraDelta);
+		this->cameraPosition += cameraDelta * this->cameraTranslationRate * deltaTime;
 		this->Refresh();
+	}
 }
 
 void EditorCanvas::OnMouseMotion(wxMouseEvent& event)
@@ -200,7 +199,8 @@ void EditorCanvas::OnRightMouseButtonDown(wxMouseEvent& event)
 void EditorCanvas::OnRightMouseButtonUp(wxMouseEvent& event)
 {
 	this->adjustingCameraLookDirection = false;
-	this->ReleaseMouse();
+	if (this->HasCapture())
+		this->ReleaseMouse();
 }
 
 void EditorCanvas::OnCaptureLost(wxMouseCaptureLostEvent& event)

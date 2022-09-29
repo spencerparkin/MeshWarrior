@@ -22,3 +22,11 @@
 									b ^= a; \
 									a ^= b; \
 								} while(0)
+
+#if defined MW_DEBUG
+#	define MW_ASSERT(cond)		do { \
+									assert(cond); \
+								} while(0)
+#else
+#	define MW_ASSERT(cond)
+#endif

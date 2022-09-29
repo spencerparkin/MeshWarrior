@@ -83,7 +83,7 @@ Plane::Plane(const Vector& center, const Vector& normal)
 				if (line->ContainsPoint(point))
 				{
 					// Sanity check: Is the point on the plane?
-					assert(this->ContainsPoint(point));
+					MW_ASSERT(this->ContainsPoint(point));
 
 					return new Point(point);
 				}

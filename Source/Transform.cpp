@@ -21,6 +21,13 @@ Vector Transform::TransformVector(const Vector& vector) const
 {
 	Vector result;
 	this->matrix.MultiplyRight(vector, result);
+	return result;
+}
+
+Vector Transform::TransformPosition(const Vector& position) const
+{
+	Vector result;
+	this->matrix.MultiplyRight(position, result);
 	result += this->translation;
 	return result;
 }

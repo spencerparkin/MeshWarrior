@@ -62,7 +62,7 @@ namespace MeshWarrior
 		{
 			if (this->stack->size() == 0)
 			{
-				assert(false);
+				MW_ASSERT(false);
 				return nullptr;
 			}
 
@@ -77,7 +77,7 @@ namespace MeshWarrior
 		virtual void Deallocate(Type* type) override
 		{
 			int j = (char*)type - this->memory;
-			assert(0 <= j && j < this->memorySize);
+			MW_ASSERT(0 <= j && j < this->memorySize);
 			if (0 <= j && j < this->memorySize)
 			{
 				type->~Type();

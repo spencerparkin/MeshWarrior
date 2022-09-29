@@ -33,7 +33,7 @@ void Matrix3x3::SetIdentity(void)
 
 void Matrix3x3::SetRow(int i, const Vector& vector)
 {
-	assert(0 <= i && i < 3);
+	MW_ASSERT(0 <= i && i < 3);
 	this->ele[i][0] = vector.x;
 	this->ele[i][1] = vector.y;
 	this->ele[i][2] = vector.z;
@@ -41,7 +41,7 @@ void Matrix3x3::SetRow(int i, const Vector& vector)
 
 void Matrix3x3::SetCol(int j, const Vector& vector)
 {
-	assert(0 <= j && j < 3);
+	MW_ASSERT(0 <= j && j < 3);
 	this->ele[0][j] = vector.x;
 	this->ele[1][j] = vector.y;
 	this->ele[2][j] = vector.z;
@@ -49,13 +49,13 @@ void Matrix3x3::SetCol(int j, const Vector& vector)
 
 Vector Matrix3x3::GetRow(int i) const
 {
-	assert(0 <= i && i < 3);
+	MW_ASSERT(0 <= i && i < 3);
 	return Vector(this->ele[i][0], this->ele[i][1], this->ele[i][2]);
 }
 
 Vector Matrix3x3::GetCol(int j) const
 {
-	assert(0 <= j && j < 3);
+	MW_ASSERT(0 <= j && j < 3);
 	return Vector(this->ele[0][j], this->ele[1][j], this->ele[2][j]);
 }
 
@@ -181,7 +181,7 @@ void Matrix3x3::SetTranspose(const Matrix3x3& matrix)
 
 void Matrix3x3::GetTranspose(Matrix3x3& matrix) const
 {
-	assert(this != &matrix);
+	MW_ASSERT(this != &matrix);
 	for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 3; j++)
 			matrix.ele[i][j] = this->ele[j][i];
@@ -189,6 +189,9 @@ void Matrix3x3::GetTranspose(Matrix3x3& matrix) const
 
 void Matrix3x3::SetProduct(const Matrix3x3& matrixA, const Matrix3x3& matrixB)
 {
+	MW_ASSERT(this != &matrixA);
+	MW_ASSERT(this != &matrixB);
+
 	Vector row[3], col[3];
 	for (int i = 0; i < 3; i++)
 	{
@@ -203,17 +206,21 @@ void Matrix3x3::SetProduct(const Matrix3x3& matrixA, const Matrix3x3& matrixB)
 
 void Matrix3x3::MultiplyLeft(const Vector& inVector, Vector& outVector) const
 {
+	MW_ASSERT(&inVector != &outVector);
+
 	Vector col[3];
 	for (int j = 0; j < 3; j++)
 		col[j] = this->GetCol(j);
 
 	outVector.x = Vector::Dot(inVector, col[0]);
-	outVector.x = Vector::Dot(inVector, col[1]);
-	outVector.x = Vector::Dot(inVector, col[2]);
+	outVector.y = Vector::Dot(inVector, col[1]);
+	outVector.z = Vector::Dot(inVector, col[2]);
 }
 
 void Matrix3x3::MultiplyRight(const Vector& inVector, Vector& outVector) const
 {
+	MW_ASSERT(&inVector != &outVector);
+
 	Vector row[3];
 	for (int i = 0; i < 3; i++)
 		row[i] = this->GetRow(i);

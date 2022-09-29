@@ -235,7 +235,7 @@ MeshGraph::Face::Face(Node* node)
 	AxisAlignedBox box;
 	
 	const Mesh::Face* face = this->node->meshGraph->targetMesh->GetFace(this->node->polygon);
-	assert(face);
+	MW_ASSERT(face);
 	Mesh::ConvexPolygon polygon = face->GeneratePolygon(this->node->meshGraph->targetMesh);
 	for (int i = 0; i < (int)polygon.vertexArray.size(); i++)
 		box.MinimallyExpandToContainPoint(polygon.vertexArray[i].point);
