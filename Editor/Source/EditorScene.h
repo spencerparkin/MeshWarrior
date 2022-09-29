@@ -51,6 +51,7 @@ namespace MeshWarrior
 			mutable Mesh* triMesh;
 		};
 
+		// TODO: Maybe this should be a map keyed by object name.
 		std::list<RenderObject*> renderObjectList;
 	};
 }
