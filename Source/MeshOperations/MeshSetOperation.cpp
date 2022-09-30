@@ -13,7 +13,7 @@ MeshSetOperation::MeshSetOperation(int flags)
 {
 	this->flags = flags;
 	this->faceSet = new std::set<Face*>();
-	this->faceHeap = new StackHeap<Face>(1024);	// TODO: Use regular heap in release?
+	this->faceHeap = new TypeHeap<Face>(); // new StackHeap<Face>(1024);	// TODO: Use regular heap in release?
 	this->cutBoundarySegmentArray = new std::vector<LineSegment*>();
 	this->cutBoundaryPolylineArray = new std::vector<Polyline*>();
 	this->graphA = new Graph();
@@ -289,8 +289,13 @@ MeshSetOperation::MeshSetOperation(int flags)
 	// Find a face on refined mesh A that we believe to be on the outside.
 	// Do the same for refined mesh B.  If none is found for either, then
 	// we're in trouble.  However, if none is found for just one, then we
-	// will conclude (approximately) that one mesh entirely envelops the other.
+	// will conclude that one mesh entirely envelops the other.
 	//
+
+	// TODO: There are some obvious cases where this idea fails.  A better idea
+	//       is to use rays, but I can even see how that might fail.  It's a
+	//       difficult problem.  In any case, the second half of the algorithm
+	//       is doomed to fail if the first half didn't succeed.
 
 	rootBox.ScaleAboutCenter(2.0);
 	Sphere sphere;
