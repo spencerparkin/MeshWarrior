@@ -3,7 +3,7 @@
 #include "../Polyline.h"
 #include "../Ray.h"
 #if MW_DEBUG_DUMP_REFINED_MESHES || MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES
-#	include "FileFormats/OBJFormat.h"
+#	include "../FileFormats/OBJFormat.h"
 #endif
 #include <set>
 #include <assert.h>
@@ -68,6 +68,12 @@ MeshSetOperation::MeshSetOperation(int flags)
 
 	const Mesh* meshA = inputMeshArray[0];
 	const Mesh* meshB = inputMeshArray[1];
+
+	if (meshA == nullptr || meshB == nullptr)
+	{
+		*this->error = "Both given meshes must be non-null.";
+		return false;
+	}
 
 	//
 	// Throw all the polygons from each mesh into a single set.
@@ -544,7 +550,7 @@ MeshSetOperation::Graph::Node* MeshSetOperation::FindRootNodeForColoring(const M
 		double theta = (double(i) / double(longitudeCount)) * MW_TWO_PI;
 		Vector vectorA = xAxis * cos(theta) + yAxis * sin(theta);
 
-		for (int j = 0; j < lattitudeCount; j++)
+		for (int j = 0; j <= lattitudeCount; j++)
 		{
 			double phi = (double(j) / double(lattitudeCount)) * MW_PI;
 			Vector vectorB = zAxis * cos(phi) + vectorA * sin(phi);
