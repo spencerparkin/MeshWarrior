@@ -218,6 +218,22 @@ MeshSetOperation::MeshSetOperation(int flags)
 	// Note that at this point, there does not have to be any cutting that
 	// was performed, and therefore, any cut boundary generated.  In the
 	// absense of any cutting, we can still generate a meaningful result.
+	// That said, any cut boundaries generated should be line-loops, so let's
+	// verify that now.
+	//
+	
+	Polyline::GeneratePolylines(*this->cutBoundarySegmentArray, *this->cutBoundaryPolylineArray);
+
+	for (Polyline* polyline : *this->cutBoundaryPolylineArray)
+	{
+		if (!polyline->IsLineLoop())
+		{
+			*this->error = "Generated cut boundary did not form a line-loop.";
+			return false;
+		}
+	}
+
+	// 
 	// Bucket sort the chopped-up polygons into their respective meshes.
 	//
 
@@ -234,18 +250,6 @@ MeshSetOperation::MeshSetOperation(int flags)
 
 	this->refinedMeshA.FromPolygonArray(polygonArrayA);
 	this->refinedMeshB.FromPolygonArray(polygonArrayB);
-
-	//
-	// Now generate a graph for each refined mesh.  This makes it easier for
-	// us to traverse over the surface of each refined mesh.  Also, use a
-	// polyline for the cut boundary since it's easier to work with.
-	//
-
-	this->graphA->Generate(&this->refinedMeshA);
-	this->graphB->Generate(&this->refinedMeshB);
-
-	// Do these need to be line-loops in all cases?
-	Polyline::GeneratePolylines(*this->cutBoundarySegmentArray, *this->cutBoundaryPolylineArray);
 
 #if MW_DEBUG_DUMP_REFINED_MESHES
 	*refinedMeshA.name = "refined_mesh_A";
@@ -264,6 +268,15 @@ MeshSetOperation::MeshSetOperation(int flags)
 
 	objFormat.Save("refined_meshes.obj", fileObjectArray);
 #endif //MW_DEBUG_DUMP_REFINED_MESHES
+
+	//
+	// Now generate a graph for each refined mesh.  This makes it easier for
+	// us to traverse over the surface of each refined mesh.  Also, use a
+	// polyline for the cut boundary since it's easier to work with.
+	//
+
+	this->graphA->Generate(&this->refinedMeshA);	// TODO: This function needs to make sure it gets all connected components, and needs to make sure it does not miss a polygon.
+	this->graphB->Generate(&this->refinedMeshB);
 
 	//
 	// Gather the nodes from both graphs into one list.
@@ -286,61 +299,21 @@ MeshSetOperation::MeshSetOperation(int flags)
 	});
 
 	//
-	// Find a face on refined mesh A that we believe to be on the outside.
-	// Do the same for refined mesh B.  If none is found for either, then
-	// we're in trouble.  However, if none is found for just one, then we
-	// will conclude that one mesh entirely envelops the other.
+	// Finally, color the graphs.  That is, in each graph, determine which faces are
+	// inside and which are oustide.  The trickiest part is determining the side for
+	// an initial face.  Once known, a BFS can be used to walk the graph.  Adjacent
+	// faces inherit the side of the face from which they came, unless a cut-boundary
+	// is crossed, in which case, we flip from outside to in, or vice-versa.
 	//
 
-	// TODO: There are some obvious cases where this idea fails.  A better idea
-	//       is to use rays, but I can even see how that might fail.  It's a
-	//       difficult problem.  In any case, the second half of the algorithm
-	//       is doomed to fail if the first half didn't succeed.
-
-	rootBox.ScaleAboutCenter(2.0);
-	Sphere sphere;
-	sphere.center = rootBox.CalcCenter();
-	sphere.radius = rootBox.CalcRadius();
-
-	Graph::Node* initialNodeA = this->FindOutsideNode(&this->refinedMeshA, &sphere, nodeList);
-	Graph::Node* initialNodeB = this->FindOutsideNode(&this->refinedMeshB, &sphere, nodeList);
-	if (initialNodeA && initialNodeB)
+	if (!this->ColorGraph(this->graphA, nodeList) || !this->ColorGraph(this->graphB, nodeList))
 	{
-		initialNodeA->side = Graph::Node::OUTSIDE;
-		initialNodeB->side = Graph::Node::OUTSIDE;
-	}
-	else if (initialNodeA)
-	{
-		initialNodeA->side = Graph::Node::OUTSIDE;
-		initialNodeB = this->FindAnyNode(&this->refinedMeshB, nodeList);
-		if (initialNodeB)
-			initialNodeB->side = Graph::Node::INSIDE;
-	}
-	else if(initialNodeB)
-	{
-		initialNodeB->side = Graph::Node::OUTSIDE;
-		initialNodeA = this->FindAnyNode(&this->refinedMeshA, nodeList);
-		if (initialNodeA)
-			initialNodeA->side = Graph::Node::INSIDE;
-	}
-
-	if (!initialNodeA || !initialNodeB)
-	{
-		*this->error = "Failed to find initial graph nodes for graph coloring.";
+		*this->error = "Failed to color graph.";
 		return false;
 	}
-
-	//
-	// Finally, color the graphs.  That is, determine whether each node is inside or outside.
-	// We do this with a BFS starting from a node for whom's side we do initially know.  Then,
-	// whenever we cross a cut boundary, we switch from outside to inside, or vise-versa.
-	//
-
-	this->ColorGraph(initialNodeA);
-	this->ColorGraph(initialNodeB);
 	
 	//
-	// Bucket sort the polygons.  Reverse-wind any inside polygons at the same time.
+	// Bucket sort the polygons by color (side).  Reverse-wind any inside polygons while we're at it.
 	//
 
 	std::vector<Mesh::ConvexPolygon> outsidePolygonArrayA, outsidePolygonArrayB;
@@ -423,95 +396,6 @@ MeshSetOperation::MeshSetOperation(int flags)
 	return true;
 }
 
-MeshSetOperation::Graph::Node* MeshSetOperation::FindOutsideNode(const Mesh* desiredTargetMesh, const Sphere* sphere, const std::list<Graph::Node*>& nodeList)
-{
-	Graph::Node* foundNode = nullptr;
-
-	// Plan to "touch" the node collection from several different perspectives.
-	std::list<Plane*> planeList;
-	for (double x = -2.0; x <= 2.0; x += 1.0)
-	{
-		for (double y = -2.0; y <= 2.0; y += 1.0)
-		{
-			for (double z = -2.0; z <= 2.0; z += 1.0)
-			{
-				Vector vector(x, y, z);
-				if (::fabs(vector.x) == 2.0 || ::fabs(vector.y) == 2.0 || ::fabs(vector.z) == 2.0)
-				{
-					vector.Normalize();
-					Plane* plane = new Plane(sphere->center + vector * sphere->radius, vector);
-					planeList.push_back(plane);
-				}
-			}
-		}
-	}
-
-	for (Plane* touchPlane : planeList)
-	{
-		// Find a node that "touches" the plane.
-		Graph::Node* closestNode = nullptr;
-		double smallestDistance = DBL_MAX;
-		for (Graph::Node* node : nodeList)
-		{
-			const Mesh* targetMesh = node->meshGraph->GetTargetMesh();
-			if (targetMesh != desiredTargetMesh)
-				continue;
-
-			ConvexPolygon polygon;
-			targetMesh->GetFace(node->polygon)->GeneratePolygon(targetMesh).ToBasicPolygon(polygon);
-			Vector center = polygon.CalcCenter();
-			double distance = ::fabs(touchPlane->ShortestSignedDistanceToPoint(center));
-			if (distance < smallestDistance)
-			{
-				smallestDistance = distance;
-				closestNode = node;
-			}
-		}
-
-		if (closestNode)
-		{
-			// Tentative declare that we've found the node we're looking for.
-			foundNode = closestNode;
-
-			// Does the plane of the node contain all other nodes on or behind it?
-			ConvexPolygon polygon;
-			const Mesh* targetMesh = closestNode->meshGraph->GetTargetMesh();
-			targetMesh->GetFace(closestNode->polygon)->GeneratePolygon(targetMesh).ToBasicPolygon(polygon);
-			Plane polygonPlane;
-			polygon.CalcPlane(polygonPlane);
-			for (Graph::Node* node : nodeList)
-			{
-				const Mesh* targetMesh = node->meshGraph->GetTargetMesh();
-				targetMesh->GetFace(node->polygon)->GeneratePolygon(targetMesh).ToBasicPolygon(polygon);
-				Vector center = polygon.CalcCenter();
-				double distance = polygonPlane.ShortestSignedDistanceToPoint(center);
-				if (distance > 0.0 && !polygonPlane.ContainsPoint(center))
-				{
-					foundNode = nullptr;
-					break;
-				}
-			}
-
-			if (foundNode)
-				break;
-		}
-	}
-
-	for (Plane* plane : planeList)
-		delete plane;
-
-	return foundNode;
-}
-
-MeshSetOperation::Graph::Node* MeshSetOperation::FindAnyNode(const Mesh* desiredTargetMesh, const std::list<Graph::Node*>& nodeList)
-{
-	for (Graph::Node* node : nodeList)
-		if (node->meshGraph->GetTargetMesh() == desiredTargetMesh)
-			return node;
-
-	return nullptr;
-}
-
 void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<Face*>& newFaceSetA, std::set<Face*>& newFaceSetB)
 {
 	newFaceSetA.clear();
@@ -556,46 +440,53 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 	}
 }
 
-void MeshSetOperation::ColorGraph(Graph::Node* rootNode)
+bool MeshSetOperation::ColorGraph(Graph* graph, const std::list<Graph::Node*>& nodeList)
 {
-	MW_ASSERT(rootNode->side != Graph::Node::UNKNOWN);
-
-	std::list<Graph::Node*> nodeQueue;
-	nodeQueue.push_back(rootNode);
-
 #if MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES
 	Mesh outsideMesh, insideMesh;
 #endif //MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES
 
-	while (nodeQueue.size() > 0)
+	while (true)
 	{
-		std::list<Graph::Node*>::iterator iter = nodeQueue.begin();
-		Graph::Node* node = *iter;
-		nodeQueue.erase(iter);
+		Graph::Node* rootNode = this->FindRootNodeForColoring(graph->GetTargetMesh(), nodeList);
+		if (!rootNode)
+			break;
+
+		MW_ASSERT(rootNode->side != Graph::Node::UNKNOWN);
+
+		std::list<Graph::Node*> nodeQueue;
+		nodeQueue.push_back(rootNode);
+
+		while (nodeQueue.size() > 0)
+		{
+			std::list<Graph::Node*>::iterator iter = nodeQueue.begin();
+			Graph::Node* node = *iter;
+			nodeQueue.erase(iter);
 
 #if MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES
-		Mesh::ConvexPolygon polygon = node->MakePolygon();
-		if (node->side == Graph::Node::INSIDE)
-			insideMesh.AddFace(polygon);
-		else if (node->side == Graph::Node::OUTSIDE)
-			outsideMesh.AddFace(polygon);
+			Mesh::ConvexPolygon polygon = node->MakePolygon();
+			if (node->side == Graph::Node::INSIDE)
+				insideMesh.AddFace(polygon);
+			else if (node->side == Graph::Node::OUTSIDE)
+				outsideMesh.AddFace(polygon);
 #endif //MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES
 
-		for (int i = 0; i < (int)node->edgeArray.size(); i++)
-		{
-			Graph::Edge* edge = node->edgeArray[i];
-			Graph::Node* adjacentNode = (Graph::Node*)edge->GetOtherAdjacency(node);
-			if (adjacentNode->side == Graph::Node::UNKNOWN)
+			for (int i = 0; i < (int)node->edgeArray.size(); i++)
 			{
-				bool cut0 = this->PointIsOnCutBoundary(edge->GetVertex(0)->point);
-				bool cut1 = this->PointIsOnCutBoundary(edge->GetVertex(1)->point);
+				Graph::Edge* edge = node->edgeArray[i];
+				Graph::Node* adjacentNode = (Graph::Node*)edge->GetOtherAdjacency(node);
+				if (adjacentNode->side == Graph::Node::UNKNOWN)
+				{
+					bool cut0 = this->PointIsOnCutBoundary(edge->GetVertex(0)->point);
+					bool cut1 = this->PointIsOnCutBoundary(edge->GetVertex(1)->point);
 
-				if (cut0 && cut1)
-					adjacentNode->side = node->OppositeSide();
-				else
-					adjacentNode->side = node->side;
+					if (cut0 && cut1)
+						adjacentNode->side = node->OppositeSide();
+					else
+						adjacentNode->side = node->side;
 
-				nodeQueue.push_back(adjacentNode);
+					nodeQueue.push_back(adjacentNode);
+				}
 			}
 		}
 	}
@@ -605,11 +496,26 @@ void MeshSetOperation::ColorGraph(Graph::Node* rootNode)
 	std::vector<FileObject*> fileObjectArray;
 	fileObjectArray.push_back(&insideMesh);
 	fileObjectArray.push_back(&outsideMesh);
-	if (rootNode->meshGraph == this->graphA)
+	if (graph == this->graphA)
 		objFormat.Save("DebugMeshA.OBJ", fileObjectArray);
-	else if (rootNode->meshGraph == this->graphB)
+	else if (graph == this->graphB)
 		objFormat.Save("DebugMeshB.OBJ", fileObjectArray);
 #endif
+
+	return true;
+}
+
+MeshSetOperation::Graph::Node* MeshSetOperation::FindRootNodeForColoring(const Mesh* targetMesh, const std::list<Graph::Node*>& nodeList)
+{
+	// Perform a bunch of ray-casts against the given node-list to find the
+	// node that is hit by each ray.  If a ray hits a node for the target
+	// mesh, and we don't yet know its color, then return it as an outside
+	// node.  If we exhaust all rays, then find the first node of the target
+	// mesh without a known color and return it as an inside node.  Note that
+	// this algorithm still does not account for all possible cases.  It is still
+	// possible for there to exist an outside node that can't be hit by any ray.
+
+	return nullptr;
 }
 
 bool MeshSetOperation::PointIsOnCutBoundary(const Vector& point, double eps /*= MW_EPS*/) const

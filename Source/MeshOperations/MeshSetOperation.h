@@ -97,12 +97,10 @@ namespace MeshWarrior
 			};
 		};
 
-		void ProcessMeshes(const Mesh* meshA, const Mesh* meshB);
 		void ProcessCollisionPair(const CollisionPair& pair, std::set<Face*>& newFaceSetA, std::set<Face*>& newFaceSetB);
-		void ColorGraph(Graph::Node* rootNode);
+		bool ColorGraph(Graph* graph, const std::list<Graph::Node*>& nodeList);
 		bool PointIsOnCutBoundary(const Vector& point, double eps = MW_EPS) const;
-		Graph::Node* FindOutsideNode(const Mesh* desiredTargetMesh, const Sphere* sphere, const std::list<Graph::Node*>& nodeList);
-		Graph::Node* FindAnyNode(const Mesh* desiredTargetMesh, const std::list<Graph::Node*>& nodeList);
+		Graph::Node* FindRootNodeForColoring(const Mesh* targetMesh, const std::list<Graph::Node*>& nodeList);
 
 		std::set<Face*>* faceSet;
 		TypeHeap<Face>* faceHeap;
