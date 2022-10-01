@@ -1,6 +1,7 @@
 #include "MeshSetOperation.h"
 #include "../Mesh.h"
 #include "../Polyline.h"
+#include "../Ray.h"
 #if MW_DEBUG_DUMP_REFINED_MESHES || MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES
 #	include "FileFormats/OBJFormat.h"
 #endif
@@ -13,7 +14,11 @@ MeshSetOperation::MeshSetOperation(int flags)
 {
 	this->flags = flags;
 	this->faceSet = new std::set<Face*>();
-	this->faceHeap = new TypeHeap<Face>(); // new StackHeap<Face>(1024);	// TODO: Use regular heap in release?
+#if MW_DEBUG_USE_STACK_HEAP
+	this->faceHeap = new StackHeap<Face>(1024 * 1024);
+#else
+	this->faceHeap = new TypeHeap<Face>();
+#endif
 	this->cutBoundarySegmentArray = new std::vector<LineSegment*>();
 	this->cutBoundaryPolylineArray = new std::vector<Polyline*>();
 	this->graphA = new Graph();
@@ -275,7 +280,7 @@ MeshSetOperation::MeshSetOperation(int flags)
 	// polyline for the cut boundary since it's easier to work with.
 	//
 
-	this->graphA->Generate(&this->refinedMeshA);	// TODO: This function needs to make sure it gets all connected components, and needs to make sure it does not miss a polygon.
+	this->graphA->Generate(&this->refinedMeshA);
 	this->graphB->Generate(&this->refinedMeshB);
 
 	//
@@ -440,7 +445,7 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 	}
 }
 
-bool MeshSetOperation::ColorGraph(Graph* graph, const std::list<Graph::Node*>& nodeList)
+bool MeshSetOperation::ColorGraph(Graph* graph, std::list<Graph::Node*>& nodeList)
 {
 #if MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES
 	Mesh outsideMesh, insideMesh;
@@ -500,12 +505,12 @@ bool MeshSetOperation::ColorGraph(Graph* graph, const std::list<Graph::Node*>& n
 		objFormat.Save("DebugMeshA.OBJ", fileObjectArray);
 	else if (graph == this->graphB)
 		objFormat.Save("DebugMeshB.OBJ", fileObjectArray);
-#endif
+#endif //MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES
 
 	return true;
 }
 
-MeshSetOperation::Graph::Node* MeshSetOperation::FindRootNodeForColoring(const Mesh* targetMesh, const std::list<Graph::Node*>& nodeList)
+MeshSetOperation::Graph::Node* MeshSetOperation::FindRootNodeForColoring(const Mesh* targetMesh, std::list<Graph::Node*>& nodeList)
 {
 	// Perform a bunch of ray-casts against the given node-list to find the
 	// node that is hit by each ray.  If a ray hits a node for the target
@@ -515,7 +520,82 @@ MeshSetOperation::Graph::Node* MeshSetOperation::FindRootNodeForColoring(const M
 	// this algorithm still does not account for all possible cases.  It is still
 	// possible for there to exist an outside node that can't be hit by any ray.
 
+	AxisAlignedBox boundingBox;
+	for (Graph::Node* node : nodeList)
+	{
+		Mesh::ConvexPolygon polygon = node->MakePolygon();
+		for (Mesh::Vertex& vertex : polygon.vertexArray)
+			boundingBox.MinimallyExpandToContainPoint(vertex.point);
+	}
+
+	boundingBox.ScaleAboutCenter(1.5);
+	Vector center = boundingBox.CalcCenter();
+	double radius = boundingBox.CalcRadius();
+
+	int lattitudeCount = 20;
+	int longitudeCount = 40;
+
+	Vector xAxis(1.0, 0.0, 0.0);
+	Vector yAxis(0.0, 1.0, 0.0);
+	Vector zAxis(0.0, 0.0, 1.0);
+
+	for (int i = 0; i <= longitudeCount; i++)
+	{
+		double theta = (double(i) / double(longitudeCount)) * MW_TWO_PI;
+		Vector vectorA = xAxis * cos(theta) + yAxis * sin(theta);
+
+		for (int j = 0; j < lattitudeCount; j++)
+		{
+			double phi = (double(j) / double(lattitudeCount)) * MW_PI;
+			Vector vectorB = zAxis * cos(phi) + vectorA * sin(phi);
+
+			Vector rayOrigin = center + vectorB * radius;
+			Vector rayDirection = center - rayOrigin;
+			Ray ray(rayOrigin, rayDirection);
+
+			Graph::Node* node = this->RayCast(ray, nodeList);
+			if (node && node->meshGraph->GetTargetMesh() == targetMesh && node->side == Graph::Node::Side::UNKNOWN)
+			{
+				node->side = Graph::Node::OUTSIDE;
+				return node;
+			}
+		}
+	}
+
+	for (Graph::Node* node : nodeList)
+	{
+		if (node->meshGraph->GetTargetMesh() == targetMesh && node->side == Graph::Node::Side::UNKNOWN)
+		{
+			node->side = Graph::Node::INSIDE;
+			return node;
+		}
+	}
+
 	return nullptr;
+}
+
+MeshSetOperation::Graph::Node* MeshSetOperation::RayCast(const Ray& ray, std::list<Graph::Node*>& nodeList)
+{
+	double smallestRayAlpha = FLT_MAX;
+	Graph::Node* hitNode = nullptr;
+
+	for (Graph::Node* node : nodeList)
+	{
+		ConvexPolygon polygon;
+		node->MakePolygon().ToBasicPolygon(polygon);
+
+		double rayAlpha = 0.0;
+		if (polygon.RayCast(ray, rayAlpha))
+		{
+			if (rayAlpha < smallestRayAlpha)
+			{
+				smallestRayAlpha = rayAlpha;
+				hitNode = node;
+			}
+		}
+	}
+
+	return hitNode;
 }
 
 bool MeshSetOperation::PointIsOnCutBoundary(const Vector& point, double eps /*= MW_EPS*/) const

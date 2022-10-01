@@ -1,5 +1,6 @@
 #include "Polygon.h"
 #include "Compressor.h"
+#include "Ray.h"
 
 using namespace MeshWarrior;
 
@@ -281,6 +282,17 @@ bool ConvexPolygon::GenerateEdgePlaneArray(std::vector<Plane>& edgePlaneArray) c
 	}
 
 	return true;
+}
+
+/*virtual*/ bool ConvexPolygon::RayCast(const Ray& ray, double& rayAlpha) const
+{
+	Plane plane;
+	this->CalcPlane(plane);
+	if (!plane.RayCast(ray, rayAlpha))
+		return false;
+
+	Vector rayPoint = ray.CalcRayPoint(rayAlpha);
+	return this->ContainsPoint(rayPoint);
 }
 
 /*virtual*/ double ConvexPolygon::CalcArea() const

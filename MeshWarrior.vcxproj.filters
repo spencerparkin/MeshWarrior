@@ -79,6 +79,9 @@
     <ClInclude Include="Source\Transform.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Ray.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Vector.cpp">
@@ -136,6 +139,9 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Source\Transform.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Ray.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

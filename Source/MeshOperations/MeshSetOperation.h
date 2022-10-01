@@ -12,6 +12,7 @@
 #define MW_DEBUG_DUMP_REFINED_MESHES			0
 #define MW_DEBUG_DUMP_CUT_BOUNDARY				0
 #define MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES		0
+#define MW_DEBUG_USE_STACK_HEAP					1
 
 #define MW_FLAG_UNION_SET_OP				0x00000001
 #define MW_FLAG_INTERSECTION_SETP_OP		0x00000002
@@ -22,6 +23,7 @@ namespace MeshWarrior
 {
 	class LineSegment;
 	class Sphere;
+	class Ray;
 
 	// Note that the algorithm used here won't work with surfaces
 	// of certain topologies (e.g., non-orientable surfaces.)  This
@@ -98,9 +100,10 @@ namespace MeshWarrior
 		};
 
 		void ProcessCollisionPair(const CollisionPair& pair, std::set<Face*>& newFaceSetA, std::set<Face*>& newFaceSetB);
-		bool ColorGraph(Graph* graph, const std::list<Graph::Node*>& nodeList);
+		bool ColorGraph(Graph* graph, std::list<Graph::Node*>& nodeList);
 		bool PointIsOnCutBoundary(const Vector& point, double eps = MW_EPS) const;
-		Graph::Node* FindRootNodeForColoring(const Mesh* targetMesh, const std::list<Graph::Node*>& nodeList);
+		Graph::Node* FindRootNodeForColoring(const Mesh* targetMesh, std::list<Graph::Node*>& nodeList);
+		Graph::Node* RayCast(const Ray& ray, std::list<Graph::Node*>& nodeList);
 
 		std::set<Face*>* faceSet;
 		TypeHeap<Face>* faceHeap;

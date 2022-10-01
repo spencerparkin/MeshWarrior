@@ -1,4 +1,5 @@
 #include "Shape.h"
+#include "Ray.h"
 #include <assert.h>
 
 using namespace MeshWarrior;
@@ -25,6 +26,12 @@ Shape::Shape()
 	// easy to calculate, a derived class can do that with an
 	// override of this method.
 	return nullptr;
+}
+
+/*virtual*/ bool Shape::RayCast(const Ray& ray, double& rayAlpha) const
+{
+	rayAlpha = 0.0;
+	return false;
 }
 
 //--------------------------------- Point ---------------------------------
@@ -92,6 +99,21 @@ Plane::Plane(const Vector& center, const Vector& normal)
 	}
 
 	return nullptr;
+}
+
+/*virtual*/ bool Plane::RayCast(const Ray& ray, double& rayAlpha) const
+{
+	double numer = Vector::Dot(this->center - ray.origin, this->unitNormal);
+	double denom = Vector::Dot(ray.direction, this->unitNormal);
+
+	if (denom == 0.0)
+		return false;
+
+	rayAlpha = numer / denom;
+	if (rayAlpha != rayAlpha || ::isinf(rayAlpha) || ::isnan(rayAlpha))
+		return false;
+
+	return true;
 }
 
 //--------------------------------- Line ---------------------------------

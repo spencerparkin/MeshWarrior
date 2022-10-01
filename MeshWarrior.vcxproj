@@ -169,6 +169,7 @@
     <ClInclude Include="Source\MeshTopology.h" />
     <ClInclude Include="Source\Polyline.h" />
     <ClInclude Include="Source\Quaternion.h" />
+    <ClInclude Include="Source\Ray.h" />
     <ClInclude Include="Source\Shape.h" />
     <ClInclude Include="Source\Transform.h" />
     <ClInclude Include="Source\TypeHeap.h" />
@@ -191,6 +192,7 @@
     <ClCompile Include="Source\MeshTopology.cpp" />
     <ClCompile Include="Source\Polyline.cpp" />
     <ClCompile Include="Source\Quaternion.cpp" />
+    <ClCompile Include="Source\Ray.cpp" />
     <ClCompile Include="Source\Shape.cpp" />
     <ClCompile Include="Source\Transform.cpp" />
     <ClCompile Include="Source\Vector.cpp" />

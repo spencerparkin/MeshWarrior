@@ -5,6 +5,8 @@
 
 namespace MeshWarrior
 {
+	class Ray;
+
 	class MESH_WARRIOR_API Shape
 	{
 	public:
@@ -14,6 +16,7 @@ namespace MeshWarrior
 		virtual double ShortestSignedDistanceToPoint(const Vector& point) const = 0;
 		virtual bool ContainsPoint(const Vector& point, double eps = MW_EPS) const;
 		virtual Shape* IntersectWith(const Shape* shape) const;
+		virtual bool RayCast(const Ray& ray, double& rayAlpha) const;
 	};
 
 	class MESH_WARRIOR_API Point : public Shape
@@ -36,6 +39,7 @@ namespace MeshWarrior
 
 		virtual double ShortestSignedDistanceToPoint(const Vector& point) const override;
 		virtual Shape* IntersectWith(const Shape* shape) const override;
+		virtual bool RayCast(const Ray& ray, double& rayAlpha) const override;
 
 		Vector center;
 		Vector unitNormal;

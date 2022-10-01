@@ -10,6 +10,7 @@
 
 #define MW_EPS					1e-6
 #define MW_PI					3.1415926536
+#define MW_TWO_PI				(2.0 * MW_PI)
 #define MW_MIN(a, b)			((a) < (b) ? (a) : (b))
 #define MW_MAX(a, b)			((a) > (b) ? (a) : (b))
 #define MW_CLAMP(x, a, b)		MW_MIN(MW_MAX(x, a), b)

@@ -48,6 +48,7 @@ namespace MeshWarrior
 		virtual double ShortestSignedDistanceToPoint(const Vector& point) const override;
 		virtual bool ContainsPoint(const Vector& point, double eps = MW_EPS) const override;
 		virtual Shape* IntersectWith(const Shape* shape) const override;
+		virtual bool RayCast(const Ray& ray, double& rayAlpha) const override;
 
 		virtual bool IsValid(double eps = MW_EPS) const override;
 		virtual void Tessellate(std::vector<ConvexPolygon>& polygonArray) const override;
