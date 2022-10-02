@@ -8,7 +8,7 @@
 #	define MESH_WARRIOR_API
 #endif
 
-#define MW_EPS					1e-6
+#define MW_EPS					1e-5
 #define MW_PI					3.1415926536
 #define MW_TWO_PI				(2.0 * MW_PI)
 #define MW_MIN(a, b)			((a) < (b) ? (a) : (b))
