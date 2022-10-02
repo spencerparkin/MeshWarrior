@@ -455,6 +455,8 @@ bool MeshSetOperation::ColorGraph(Graph* graph, std::list<Graph::Node*>& nodeLis
 {
 #if MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES
 	Mesh outsideMesh, insideMesh;
+	*outsideMesh.name = "outside_mesh";
+	*insideMesh.name = "inside_mesh";
 #endif //MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES
 
 	while (true)
@@ -488,10 +490,9 @@ bool MeshSetOperation::ColorGraph(Graph* graph, std::list<Graph::Node*>& nodeLis
 				Graph::Node* adjacentNode = (Graph::Node*)edge->GetOtherAdjacency(node);
 				if (adjacentNode->side == Graph::Node::UNKNOWN)
 				{
-					bool cut0 = this->PointIsOnCutBoundary(edge->GetVertex(0)->point);
-					bool cut1 = this->PointIsOnCutBoundary(edge->GetVertex(1)->point);
-
-					if (cut0 && cut1)
+					Vector edgeMidPoint = (edge->GetVertex(0)->point + edge->GetVertex(1)->point) / 2.0;
+					bool onCutBoundary = this->PointIsOnCutBoundary(edgeMidPoint);
+					if (onCutBoundary)
 						adjacentNode->side = node->OppositeSide();
 					else
 						adjacentNode->side = node->side;
@@ -607,7 +608,7 @@ MeshSetOperation::Graph::Node* MeshSetOperation::RayCast(const Ray& ray, std::li
 bool MeshSetOperation::PointIsOnCutBoundary(const Vector& point, double eps /*= MW_EPS*/) const
 {
 	for (int i = 0; i < (int)this->cutBoundaryPolylineArray->size(); i++)
-		if ((*this->cutBoundaryPolylineArray)[i]->HasVertex(point, eps))
+		if ((*this->cutBoundaryPolylineArray)[i]->ContainsPoint(point, eps))
 			return true;
 
 	return false;

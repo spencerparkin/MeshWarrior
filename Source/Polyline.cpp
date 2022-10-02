@@ -108,6 +108,18 @@ bool Polyline::HasVertex(const Vector& vertex, double eps /*= MW_EPS*/) const
 	return false;
 }
 
+bool Polyline::ContainsPoint(const Vector& point, double eps /*= MW_EPS*/) const
+{
+	for (int i = 0; i < (int)this->vertexArray->size() - 1; i++)
+	{
+		LineSegment lineSegment((*this->vertexArray)[i], (*this->vertexArray)[i + 1]);
+		if (lineSegment.ContainsPoint(point, eps))
+			return true;
+	}
+
+	return false;
+}
+
 bool Polyline::IsLineLoop(double eps /*= MW_EPS*/) const
 {
 	if (this->vertexArray->size() == 0)
