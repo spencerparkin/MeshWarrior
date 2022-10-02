@@ -10,8 +10,8 @@ int main()
 
 	OBJFormat objFormat;
 
-	Mesh* meshA = objFormat.LoadMesh("MeshA.OBJ");
-	Mesh* meshB = objFormat.LoadMesh("MeshB.OBJ");
+	Mesh* meshA = objFormat.LoadMesh("Box.OBJ");
+	Mesh* meshB = objFormat.LoadMesh("Sphere.OBJ");
 
 	int flags = MW_FLAG_UNION_SET_OP | MW_FLAG_INTERSECTION_SETP_OP | MW_FLAG_A_MINUS_B_SET_OP | MW_FLAG_B_MINUS_A_SET_OP;
 
