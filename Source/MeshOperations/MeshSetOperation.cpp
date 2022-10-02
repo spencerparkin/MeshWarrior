@@ -237,7 +237,7 @@ MeshSetOperation::MeshSetOperation(int flags)
 
 	for (Polyline* polyline : *this->cutBoundaryPolylineArray)
 	{
-		if (!polyline->IsLineLoop())
+		if (!polyline->IsLineLoop(1e-3))
 		{
 			*this->error = "Generated cut boundary did not form a line-loop.";
 			return false;
@@ -253,6 +253,8 @@ MeshSetOperation::MeshSetOperation(int flags)
 
 	for (Face* face : *this->faceSet)
 	{
+		MW_ASSERT(face->family == Face::FAMILY_A || face->family == Face::FAMILY_B);
+
 		if (face->family == Face::FAMILY_A)
 			polygonArrayA.push_back(face->polygon);
 		else if (face->family == Face::FAMILY_B)
@@ -420,11 +422,6 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 	Shape* shape = polygonA.IntersectWith(&polygonB);
 	if (shape)
 	{
-		// Store the intersection for later use.  We'll need it when coloring the graph.
-		LineSegment* lineSegment = dynamic_cast<LineSegment*>(shape);
-		MW_ASSERT(lineSegment);
-		this->cutBoundarySegmentArray->push_back(lineSegment);
-
 		Plane planeA, planeB;
 		polygonA.CalcPlane(planeA);
 		polygonB.CalcPlane(planeB);
@@ -433,20 +430,30 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 		polygonA.SplitAgainstPlane(planeB, polygonArrayA);
 		polygonB.SplitAgainstPlane(planeA, polygonArrayB);
 
-		for (ConvexPolygon& newPolygonA : polygonArrayA)
+		if (polygonArrayA.size() < 2 || polygonArrayB.size() < 2)
+			delete shape;
+		else
 		{
-			Face* face = this->faceHeap->Allocate();
-			face->family = Face::FAMILY_A;
-			face->polygon.FromBasicPolygon(newPolygonA);
-			newFaceSetA.insert(face);
-		}
+			// Store the intersection for later use.  We'll need it when coloring the graph.
+			LineSegment* lineSegment = dynamic_cast<LineSegment*>(shape);
+			MW_ASSERT(lineSegment);
+			this->cutBoundarySegmentArray->push_back(lineSegment);
 
-		for (ConvexPolygon& newPolygonB : polygonArrayB)
-		{
-			Face* face = this->faceHeap->Allocate();
-			face->family = Face::FAMILY_B;
-			face->polygon.FromBasicPolygon(newPolygonB);
-			newFaceSetB.insert(face);
+			for (ConvexPolygon& newPolygonA : polygonArrayA)
+			{
+				Face* face = this->faceHeap->Allocate();
+				face->family = Face::FAMILY_A;
+				face->polygon.FromBasicPolygon(newPolygonA);
+				newFaceSetA.insert(face);
+			}
+
+			for (ConvexPolygon& newPolygonB : polygonArrayB)
+			{
+				Face* face = this->faceHeap->Allocate();
+				face->family = Face::FAMILY_B;
+				face->polygon.FromBasicPolygon(newPolygonB);
+				newFaceSetB.insert(face);
+			}
 		}
 	}
 }
