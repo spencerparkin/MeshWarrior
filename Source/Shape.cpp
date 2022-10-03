@@ -196,14 +196,12 @@ LineSegment::LineSegment(const Vector& pointA, const Vector& pointB)
 
 /*virtual*/ double LineSegment::ShortestSignedDistanceToPoint(const Vector& point) const
 {
-	Vector vector;
-	vector.Project(point - this->center, this->unitNormal);
-	double length = vector.Length();
-	if (length <= this->radius)
+	double signedLength = Vector::Dot(point - this->center, this->unitNormal);
+	if (fabs(signedLength) <= this->radius)
 		return Line::ShortestSignedDistanceToPoint(point);
 
-	vector.Scale(this->radius / length);
-	return (point - this->center + vector).Length();
+	Vector nearestEdgePoint = this->center + this->unitNormal * this->radius * MW_SIGN(signedLength);
+	return (point - nearestEdgePoint).Length();
 }
 
 /*virtual*/ bool LineSegment::ContainsPoint(const Vector& point, double eps /*= MW_EPS*/) const

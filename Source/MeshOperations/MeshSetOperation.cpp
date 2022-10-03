@@ -2,7 +2,7 @@
 #include "../Mesh.h"
 #include "../Polyline.h"
 #include "../Ray.h"
-#if MW_DEBUG_DUMP_REFINED_MESHES || MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES
+#if MW_DEBUG_DUMP_REFINED_MESHES || MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES || MW_DEBUG_DUMP_CUT_CASE
 #	include "../FileFormats/OBJFormat.h"
 #endif
 #include <set>
@@ -158,17 +158,22 @@ MeshSetOperation::MeshSetOperation(int flags)
 		std::set<Face*> newFaceSetA, newFaceSetB;
 		this->ProcessCollisionPair(pair, newFaceSetA, newFaceSetB);
 
-		if (newFaceSetA.size() > 0 || newFaceSetB.size() > 0)
+		if (newFaceSetA.size() > 0)
 		{
 			this->faceSet->erase(pair.faceA);
-			this->faceSet->erase(pair.faceB);
-
 			for (Face* face : newFaceSetA)
 				this->faceSet->insert(face);
+		}
 
+		if (newFaceSetB.size() > 0)
+		{
+			this->faceSet->erase(pair.faceB);
 			for (Face* face : newFaceSetB)
 				this->faceSet->insert(face);
+		}
 
+		if (newFaceSetA.size() > 0 || newFaceSetB.size() > 0)
+		{
 			std::set<Face*> oldFaceSetA, oldFaceSetB;
 
 			iter = collisionPairQueue.begin();
@@ -178,15 +183,15 @@ MeshSetOperation::MeshSetOperation(int flags)
 				nextIter++;
 
 				CollisionPair& existingPair = *iter;
+				MW_ASSERT(!(existingPair.faceA == pair.faceA && existingPair.faceB == pair.faceB));
 
-				if (existingPair.faceA == pair.faceA && existingPair.faceB == pair.faceB)
-					collisionPairQueue.erase(iter);		// This shouldn't happen, but account for it anyway.
-				else if (existingPair.faceA == pair.faceA)
+				if (newFaceSetA.size() > 0 && existingPair.faceA == pair.faceA)
 				{
 					oldFaceSetB.insert(existingPair.faceB);
 					collisionPairQueue.erase(iter);
 				}
-				else if (existingPair.faceB == pair.faceB)
+
+				if (newFaceSetB.size() > 0 && existingPair.faceB == pair.faceB)
 				{
 					oldFaceSetA.insert(existingPair.faceA);
 					collisionPairQueue.erase(iter);
@@ -195,32 +200,20 @@ MeshSetOperation::MeshSetOperation(int flags)
 				iter = nextIter;
 			}
 
-			this->faceHeap->Deallocate(pair.faceA);
-			this->faceHeap->Deallocate(pair.faceB);
-
-			// Note that rather than skipping invalid polygons here, we really
-			// should just never be producing any invalid polygons.
-
-			for (Face* faceA : newFaceSetA)
+			if (newFaceSetA.size() > 0)
 			{
-				ConvexPolygon polygon;
-				faceA->polygon.ToBasicPolygon(polygon);
-				if (!polygon.IsValid(1e-4))
-					continue;
-
-				for (Face* faceB : oldFaceSetB)
-					collisionPairQueue.push_back(CollisionPair(faceA, faceB));
+				this->faceHeap->Deallocate(pair.faceA);
+				for (Face* faceA : newFaceSetA)
+					for (Face* faceB : oldFaceSetB)
+						collisionPairQueue.push_back(CollisionPair(faceA, faceB));
 			}
 
-			for (Face* faceB : newFaceSetB)
+			if (newFaceSetB.size() > 0)
 			{
-				ConvexPolygon polygon;
-				faceB->polygon.ToBasicPolygon(polygon);
-				if (!polygon.IsValid(1e-4))
-					continue;
-
-				for (Face* faceA : oldFaceSetA)
-					collisionPairQueue.push_back(CollisionPair(faceA, faceB));
+				this->faceHeap->Deallocate(pair.faceB);
+				for (Face* faceB : newFaceSetB)
+					for (Face* faceA : oldFaceSetA)
+						collisionPairQueue.push_back(CollisionPair(faceA, faceB));
 			}
 		}
 	}
@@ -233,6 +226,19 @@ MeshSetOperation::MeshSetOperation(int flags)
 	// verify that now.
 	//
 	
+	// TODO: BIG SIGH........Here-in lies the fatal flaw in this entire algorithm!!!
+	//       The cuts, even if generated correctly (and there is almost always a
+	//       problem with that) do not necessarily form line-loops in many cases.
+	//       It was wrong to assume that they always would (if generated without errors.)
+	//       This whole approach has to be thrown out!  I don't see any other way.
+	//       A completely new algorithm has to be designed from the ground up that
+	//       focuses entirely on walking the shared line-segments, if any, between
+	//       the two given meshes.  I would even assign little cut planes to the
+	//       line-segments.  Only then could you begin to form the result meshes.
+	//       I should take a break from this for a while, and then maybe come back
+	//       to it one day, but until then, all of this code is essentially garbage!!
+	//       SIGH....................................................................
+
 	Polyline::GeneratePolylines(*this->cutBoundarySegmentArray, *this->cutBoundaryPolylineArray);
 
 	for (Polyline* polyline : *this->cutBoundaryPolylineArray)
@@ -418,6 +424,16 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 	pair.faceA->polygon.ToBasicPolygon(polygonA);
 	pair.faceB->polygon.ToBasicPolygon(polygonB);
 
+#if MW_DEBUG_DUMP_CUT_CASE
+	Mesh originalA, originalB, splitA, splitB;
+	*originalA.name = "original_A";
+	*originalB.name = "original_B";
+	originalA.AddFace(pair.faceA->polygon);
+	originalB.AddFace(pair.faceB->polygon);
+	*splitA.name = "split_A";
+	*splitB.name = "split_B";
+#endif //MW_DEBUG_DUMP_CUT_CASE
+
 	// Do they actually intersect in a non-trivial way?
 	Shape* shape = polygonA.IntersectWith(&polygonB);
 	if (shape)
@@ -430,7 +446,7 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 		polygonA.SplitAgainstPlane(planeB, polygonArrayA);
 		polygonB.SplitAgainstPlane(planeA, polygonArrayB);
 
-		if (polygonArrayA.size() < 2 || polygonArrayB.size() < 2)
+		if (polygonArrayA.size() < 2 && polygonArrayB.size() < 2)
 			delete shape;
 		else
 		{
@@ -439,23 +455,47 @@ void MeshSetOperation::ProcessCollisionPair(const CollisionPair& pair, std::set<
 			MW_ASSERT(lineSegment);
 			this->cutBoundarySegmentArray->push_back(lineSegment);
 
-			for (ConvexPolygon& newPolygonA : polygonArrayA)
+			if (polygonArrayA.size() > 1)
 			{
-				Face* face = this->faceHeap->Allocate();
-				face->family = Face::FAMILY_A;
-				face->polygon.FromBasicPolygon(newPolygonA);
-				newFaceSetA.insert(face);
+				for (ConvexPolygon& newPolygonA : polygonArrayA)
+				{
+					Face* face = this->faceHeap->Allocate();
+					face->family = Face::FAMILY_A;
+					face->polygon.FromBasicPolygon(newPolygonA);
+					newFaceSetA.insert(face);
+
+#if MW_DEBUG_DUMP_CUT_CASE
+					splitA.AddFace(face->polygon);
+#endif //MW_DEBUG_DUMP_CUT_CASE
+				}
 			}
 
-			for (ConvexPolygon& newPolygonB : polygonArrayB)
+			if (polygonArrayB.size() > 1)
 			{
-				Face* face = this->faceHeap->Allocate();
-				face->family = Face::FAMILY_B;
-				face->polygon.FromBasicPolygon(newPolygonB);
-				newFaceSetB.insert(face);
+				for (ConvexPolygon& newPolygonB : polygonArrayB)
+				{
+					Face* face = this->faceHeap->Allocate();
+					face->family = Face::FAMILY_B;
+					face->polygon.FromBasicPolygon(newPolygonB);
+					newFaceSetB.insert(face);
+
+#if MW_DEBUG_DUMP_CUT_CASE
+					splitB.AddFace(face->polygon);
+#endif //MW_DEBUG_DUMP_CUT_CASE
+				}
 			}
 		}
 	}
+
+#if MW_DEBUG_DUMP_CUT_CASE
+	std::vector<FileObject*> fileObjectArray;
+	fileObjectArray.push_back(&originalA);
+	fileObjectArray.push_back(&originalB);
+	fileObjectArray.push_back(&splitA);
+	fileObjectArray.push_back(&splitB);
+	OBJFormat objFormat;
+	objFormat.Save("CutCase.OBJ", fileObjectArray);
+#endif //MW_DEBUG_DUMP_CUT_CASE
 }
 
 bool MeshSetOperation::ColorGraph(Graph* graph, std::list<Graph::Node*>& nodeList)
@@ -497,7 +537,21 @@ bool MeshSetOperation::ColorGraph(Graph* graph, std::list<Graph::Node*>& nodeLis
 				Graph::Node* adjacentNode = (Graph::Node*)edge->GetOtherAdjacency(node);
 				if (adjacentNode->side == Graph::Node::UNKNOWN)
 				{
-					Vector edgeMidPoint = (edge->GetVertex(0)->point + edge->GetVertex(1)->point) / 2.0;
+#if MW_DEBUG_TRAP_GRAPH_COLORING
+					ConvexPolygon debugPolygon;
+					adjacentNode->MakePolygon().ToBasicPolygon(debugPolygon);
+					Vector debugCenter = debugPolygon.CalcCenter();
+					if ((debugCenter - Vector(-4.5936999999999992, 4.9386290987559436, -3.8866872890729072)).Length() < 1e-3)
+					{
+						node->MakePolygon().ToBasicPolygon(debugPolygon);
+						debugCenter = debugPolygon.CalcCenter();
+						debugCenter.x = 0.0;
+					}
+#endif //MW_DEBUG_TRAP_GRAPH_COLORING
+
+					Vector edgePointA = edge->GetVertex(0)->point;
+					Vector edgePointB = edge->GetVertex(1)->point;
+					Vector edgeMidPoint = (edgePointA + edgePointB) / 2.0;
 					bool onCutBoundary = this->PointIsOnCutBoundary(edgeMidPoint);
 					if (onCutBoundary)
 						adjacentNode->side = node->OppositeSide();
@@ -615,7 +669,7 @@ MeshSetOperation::Graph::Node* MeshSetOperation::RayCast(const Ray& ray, std::li
 bool MeshSetOperation::PointIsOnCutBoundary(const Vector& point, double eps /*= MW_EPS*/) const
 {
 	for (int i = 0; i < (int)this->cutBoundaryPolylineArray->size(); i++)
-		if ((*this->cutBoundaryPolylineArray)[i]->ContainsPoint(point, eps))
+		if ((*this->cutBoundaryPolylineArray)[i]->ContainsPoint(point, 2.0 * eps))	// Why two?  I don't know.
 			return true;
 
 	return false;

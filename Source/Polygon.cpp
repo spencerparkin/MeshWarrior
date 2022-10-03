@@ -37,8 +37,49 @@ void Polygon::operator=(const Polygon& polygon)
 	if (!this->CalcPlane(plane))
 		return false;
 
+	// Make sure they're all approximately co-planar.
 	for (const Vector& vertex : *this->vertexArray)
-		if (!plane.ContainsPoint(vertex, eps))
+		if (!plane.ContainsPoint(vertex, 10.0 * eps))	// Why ten?  I don't know.
+			return false;
+
+	return true;
+}
+
+// This is essentially the case where the polygon has zero area.
+// Rather than calculate area, though, here we will check to see
+// if all points are co-linear.
+/*virtual*/ bool Polygon::IsDegenerate(double eps /*= MW_EPS*/) const
+{
+	if (this->vertexArray->size() < 3)
+		return true;
+
+	Vector vertexA, vertexB;
+	int chosen_i = -1, chosen_j = -1;
+	double largestDistance = FLT_MIN;
+	for (int i = 0; i < (int)this->vertexArray->size(); i++)
+	{
+		vertexA = (*this->vertexArray)[i];
+		for (int j = i + 1; j < (int)this->vertexArray->size(); j++)
+		{
+			vertexB = (*this->vertexArray)[j];
+			double distance = (vertexA - vertexB).Length();
+			if (distance > largestDistance)
+			{
+				largestDistance = distance;
+				chosen_i = i;
+				chosen_j = j;
+			}
+		}
+	}
+	
+	if (largestDistance < MW_EPS)
+		return true;
+
+	vertexA = (*this->vertexArray)[chosen_i];
+	vertexB = (*this->vertexArray)[chosen_j];
+	LineSegment lineSegment(vertexA, vertexB);
+	for (int i = 0; i < (int)this->vertexArray->size(); i++)
+		if (!lineSegment.ContainsPoint((*this->vertexArray)[i], eps))
 			return false;
 
 	return true;
@@ -399,12 +440,11 @@ bool ConvexPolygon::SplitAgainstPlane(const Plane& plane, std::vector<ConvexPoly
 
 	ConvexPolygon polygonFront, polygonBack;
 
-	double eps = MW_EPS;
 	for (int i = 0; i < (signed)pointArray.size(); i++)
 	{
 		Vector& point = pointArray[i];
 		double distance = plane.ShortestSignedDistanceToPoint(point);
-		if (::fabs(distance) < eps)
+		if (::fabs(distance) <= MW_EPS)
 		{
 			polygonFront.vertexArray->push_back(point);
 			polygonBack.vertexArray->push_back(point);
@@ -415,7 +455,10 @@ bool ConvexPolygon::SplitAgainstPlane(const Plane& plane, std::vector<ConvexPoly
 			polygonBack.vertexArray->push_back(point);
 	}
 
-	if (polygonFront.vertexArray->size() >= 3 && polygonBack.vertexArray->size() >= 3)
+	bool polygonFrontDegenerate = polygonFront.IsDegenerate();
+	bool polygonBackDegenerate = polygonBack.IsDegenerate();
+
+	if (!(polygonFrontDegenerate || polygonBackDegenerate))
 	{
 		polygonArray.push_back(polygonFront);
 		polygonArray.push_back(polygonBack);

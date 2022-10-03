@@ -23,6 +23,7 @@ namespace MeshWarrior
 		virtual bool ContainsPoint(const Vector& point, double eps = MW_EPS) const override;
 
 		virtual bool IsValid(double eps = MW_EPS) const;
+		virtual bool IsDegenerate(double eps = MW_EPS) const;
 		virtual void Tessellate(std::vector<ConvexPolygon>& polygonArray) const;
 		virtual double CalcArea() const;
 

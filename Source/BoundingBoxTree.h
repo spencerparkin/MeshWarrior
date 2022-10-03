@@ -36,7 +36,7 @@ namespace MeshWarrior
 			Node();
 			virtual ~Node();
 
-			bool AddGuest(Guest* guest);
+			bool AddGuest(Guest* guest, int currentDepth, int maxDepth);
 			void FindGuests(const AxisAlignedBox& box, std::list<Guest*>& foundGuestList) const;
 			void TallyGuests(int& tally) const;
 			void GatherAllGuests(std::list<Guest*>& givenGuestList) const;

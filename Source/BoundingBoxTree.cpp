@@ -26,7 +26,7 @@ bool BoundingBoxTree::AddGuest(Guest* guest)
 	if (!this->rootNode)
 		return false;
 
-	return this->rootNode->AddGuest(guest);
+	return this->rootNode->AddGuest(guest, 1, 16);
 }
 
 void BoundingBoxTree::FindGuests(const AxisAlignedBox& box, std::list<Guest*>& foundGuestList) const
@@ -81,7 +81,7 @@ BoundingBoxTree::Node::Node()
 	delete this->node[1];
 }
 
-bool BoundingBoxTree::Node::AddGuest(Guest* guest)
+bool BoundingBoxTree::Node::AddGuest(Guest* guest, int currentDepth, int maxDepth)
 {
 	if (!this->boundingBox.ContainsBox(guest->CalcBoundingBox()))
 		return false;
@@ -94,9 +94,10 @@ bool BoundingBoxTree::Node::AddGuest(Guest* guest)
 		this->boundingBox.SplitReasonably(this->node[0]->boundingBox, this->node[1]->boundingBox);
 	}
 
-	for (int i = 0; i < 2; i++)
-		if (this->node[i]->AddGuest(guest))
-			return true;
+	if (currentDepth < maxDepth)
+		for (int i = 0; i < 2; i++)
+			if (this->node[i]->AddGuest(guest, currentDepth + 1, maxDepth))
+				return true;
 
 	this->guestList.push_back(guest);
 	return true;
