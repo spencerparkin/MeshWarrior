@@ -1,5 +1,7 @@
 # MeshWarrior
 
+WARNING: As of now, this is a failed project, and needs me to revisit it again some day.
+
 MeshWarrior is a C++ library of code designed to support various operations on 3D meshes.  Current features include...
 
 * Saving/loading to/from Wavefront OBJ file format.
