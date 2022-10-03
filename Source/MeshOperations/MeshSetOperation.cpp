@@ -226,29 +226,28 @@ MeshSetOperation::MeshSetOperation(int flags)
 	// verify that now.
 	//
 	
-	// TODO: BIG SIGH........Here-in lies the fatal flaw in this entire algorithm!!!
-	//       The cuts, even if generated correctly (and there is almost always a
-	//       problem with that) do not necessarily form line-loops in many cases.
-	//       It was wrong to assume that they always would (if generated without errors.)
-	//       This whole approach has to be thrown out!  I don't see any other way.
-	//       A completely new algorithm has to be designed from the ground up that
-	//       focuses entirely on walking the shared line-segments, if any, between
-	//       the two given meshes.  I would even assign little cut planes to the
-	//       line-segments.  Only then could you begin to form the result meshes.
-	//       I should take a break from this for a while, and then maybe come back
-	//       to it one day, but until then, all of this code is essentially garbage!!
-	//       SIGH....................................................................
+	// TODO: There is a problem here where the cut-boundaries are not coming together
+	//       and forming line-loops.  In theory, I believe that if the cutting process
+	//       is done correctly (and that by itself is very hard to do), then they
+	//       should form line-loops.  That said, this whole approach might not be very
+	//       good (e.g., not very numerically stable), because we're making the boundary
+	//       detection process dependant on the cutting process.  Rather, the cutting
+	//       process should probably be dependant upon an algorithm that performs the
+	//       boundary detection.  In any case, I wish there was an easy way to visualize
+	//       the cut-boundary being generated.  3DS Max won't do polylines in OBJ format,
+	//       but maybe I can just spit out a bunch of degenerate triangles; it seems to
+	//       draw those as line segments.
 
 	Polyline::GeneratePolylines(*this->cutBoundarySegmentArray, *this->cutBoundaryPolylineArray);
 
-	for (Polyline* polyline : *this->cutBoundaryPolylineArray)
+	/*for (Polyline* polyline : *this->cutBoundaryPolylineArray)
 	{
 		if (!polyline->IsLineLoop(1e-3))
 		{
 			*this->error = "Generated cut boundary did not form a line-loop.";
 			return false;
 		}
-	}
+	}*/
 
 	// 
 	// Bucket sort the chopped-up polygons into their respective meshes.

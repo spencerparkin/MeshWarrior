@@ -9,7 +9,7 @@
 #include "../MeshGraph.h"
 #include <set>
 
-#define MW_DEBUG_DUMP_REFINED_MESHES			1
+#define MW_DEBUG_DUMP_REFINED_MESHES			0
 #define MW_DEBUG_DUMP_INSIDE_OUTSIDE_MESHES		0
 #define MW_DEBUG_DUMP_CUT_BOUNDARY				0
 #define MW_DEBUG_USE_STACK_HEAP					1
